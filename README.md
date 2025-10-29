@@ -1,0 +1,177 @@
+# AiCubeFront - Flow Iframe Integration Library
+
+A React TypeScript library for building iframe-based UI components that integrate with the Flow application system.
+
+## Overview
+
+This library provides tools for creating custom parameter editors and UI components that can be embedded as iframes within a larger Flow/Cube-based data analytics system. It handles all the iframe communication complexity through the `postMessage` API.
+
+## Project Structure
+
+```
+src/
+├── flow/              # Flow iframe integration library
+│   ├── types.ts       # TypeScript type definitions
+│   ├── useFlow.ts     # React hook for iframe communication
+│   ├── FlowResponseBuilder.ts  # Response builder utility
+│   └── index.ts       # Library exports
+├── components/        # UI components
+│   └── QueryList.tsx  # MUI accordion list for queries
+├── App.tsx           # Demo application
+└── main.tsx          # React entry point
+```
+
+## Library Components (`src/flow/`)
+
+### `useFlow` Hook
+
+A React hook that manages iframe communication with a parent window.
+
+**Features:**
+- Loads data from the parent Flow application
+- Saves parameter values back to the parent
+- Handles cancel operations
+- Manages iframe lifecycle
+
+### `FlowResponseBuilder` Class
+
+A builder pattern utility for constructing Flow responses.
+
+**Features:**
+- Add/modify parameters
+- Define data fields
+- Set display names
+- Configure filters
+
+### Type Definitions
+
+Comprehensive TypeScript types including:
+- `FlowCube` - Query/data cube representation
+- `IFlowParameter` - Parameter configuration
+- `IField` - Field definitions
+- `FlowResponse` - Response format
+
+## Demo Application
+
+The demo application (`src/App.tsx` & `src/main.tsx`) demonstrates the Flow iframe integration by displaying connected queries with their parameters.
+
+### UI Components
+
+The project uses Material-UI (MUI) for the user interface:
+- `src/components/QueryList.tsx` - Displays connected queries as an expandable accordion list with editable user notes
+
+**Features:**
+- View query names and descriptions
+- Expand queries to see their parameters
+- Add personal notes/descriptions to queries and parameters
+- User notes are displayed with a 📝 icon in the query header
+- User descriptions are persisted when saving and restored when reopening
+- Descriptions are returned in a separate dictionary format:
+  ```typescript
+  {
+    "Query Display Name": {
+      queryDescription: "User's note about the query",
+      parameters: {
+        "Parameter Display Name": "User's note about parameter"
+      }
+    }
+  }
+  ```
+
+### Installation
+
+```bash
+npm install
+```
+
+### Running the Demo
+
+1. Start the Vite development server:
+```bash
+npm run dev
+```
+
+2. Open `parent.html` in your browser (you can double-click it or use a local web server)
+
+3. Use the controls in the parent window to:
+   - **Send Data & Open Iframe**: Opens the iframe and sends mock Flow data to it
+   - **Trigger Save**: Tests the save flow - the iframe processes data and sends response back to parent
+   - **Trigger Cancel**: Tests the cancel operation
+   - **Close Iframe**: Closes the iframe view
+
+### How It Works
+
+The demo consists of two parts:
+
+1. **parent.html** - Simulates the Flow parent window
+   - Embeds the demo app in an iframe (hidden by default)
+   - Clicking "Send Data & Open Iframe" opens the iframe and sends mock Flow data
+   - Shows the sent data in the parent window
+   - Displays responses from the iframe when save is triggered
+   - Can close the iframe with the "Close Iframe" button
+
+2. **src/App.tsx** - The embedded iframe application
+   - Uses the `useFlow` hook to receive data
+   - Displays received data in a readable format
+   - Returns modified responses when save is triggered
+   - The response is shown in the parent window, not the iframe
+
+### Communication Flow
+
+```
+Parent Window (parent.html)
+    ↓ send_iframe_data
+    ↓ save_parameter_value
+    ↓ cancel_parameter_value
+    ↓
+Iframe (demo/App.tsx)
+    ↓ iframe_is_ready
+    ↓ set_parameter_value
+    ↑
+Parent Window
+```
+
+## Usage in Your Project
+
+### Basic Example
+
+```typescript
+import { useFlow, FlowResponseBuilder } from './flow';
+
+function MyCustomEditor() {
+  useFlow({
+    onLoadData: (data) => {
+      // Handle incoming data from Flow
+      console.log('Received:', data);
+    },
+    onSave: () => {
+      // Build and return your response
+      const builder = new FlowResponseBuilder();
+      builder.addParameter('my_param', 'My Parameter', 'String', 'value');
+      return builder.build();
+    },
+    onCancel: () => {
+      // Handle cancel
+    },
+  });
+
+  return <div>Your custom UI here</div>;
+}
+```
+
+## Development
+
+### Building
+
+```bash
+npm run build
+```
+
+### Type Checking
+
+The project uses TypeScript with strict mode enabled for type safety.
+
+## License
+
+MIT
+

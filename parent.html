@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flow Parent Simulator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #333;
+        }
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 12px 24px;
+            font-size: 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        button.primary {
+            background-color: #4CAF50;
+            color: white;
+        }
+        button.primary:hover {
+            background-color: #45a049;
+        }
+        button.secondary {
+            background-color: #2196F3;
+            color: white;
+        }
+        button.secondary:hover {
+            background-color: #0b7dda;
+        }
+        button.danger {
+            background-color: #f44336;
+            color: white;
+        }
+        button.danger:hover {
+            background-color: #da190b;
+        }
+        .status {
+            padding: 15px;
+            background-color: #e3f2fd;
+            border-left: 4px solid #2196F3;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .response-section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .response-section h2 {
+            margin-top: 0;
+            color: #FF9800;
+        }
+        pre {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 4px;
+            overflow: auto;
+            max-height: 300px;
+            border: 1px solid #ddd;
+        }
+        .iframe-section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: block; /* Visible by default */
+        }
+        .iframe-section h2 {
+            margin-top: 0;
+            color: #9C27B0;
+            border-bottom: 2px solid #9C27B0;
+            padding-bottom: 10px;
+        }
+        iframe {
+            width: 100%;
+            height: 800px;
+            border: 3px solid #9C27B0;
+            border-radius: 8px;
+            background: white;
+            box-shadow: 0 4px 12px rgba(156, 39, 176, 0.2);
+            display: block;
+        }
+        .info {
+            background-color: #fff3cd;
+            padding: 15px;
+            border-left: 4px solid #ffc107;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Flow Parent Window Simulator</h1>
+        
+        <div class="info">
+            <strong>ℹ️ Instructions:</strong>
+            <ol>
+                <li>Start the Vite dev server: <code>npm run dev</code></li>
+                <li>Open this HTML file in your browser</li>
+                <li>Click "Send Data to Iframe" to simulate Flow sending data</li>
+                <li>Click "Trigger Save" or "Trigger Cancel" to test iframe responses</li>
+            </ol>
+        </div>
+
+        <div class="controls">
+            <h2>Controls</h2>
+            <div class="button-group">
+                <button class="primary" onclick="sendDataToIframe()">📨 Send Data & Open Iframe</button>
+                <button class="secondary" onclick="triggerSave()">💾 Trigger Save</button>
+                <button class="danger" onclick="triggerCancel()">❌ Trigger Cancel</button>
+                <button class="danger" onclick="closeIframe()">✖️ Close Iframe</button>
+            </div>
+            <div class="status" id="status">
+                Status: Ready to send data
+            </div>
+        </div>
+
+        <div class="iframe-section" id="iframeSection">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h2 style="margin: 0;">🖼️ Embedded Flow Demo App (Iframe)</h2>
+                <button class="danger" onclick="closeIframe()" style="padding: 8px 16px;">✖️ Close</button>
+            </div>
+            <div style="background-color: #e3f2fd; padding: 15px; border-left: 4px solid #2196F3; border-radius: 4px; margin-bottom: 15px;">
+                <strong>📤 Data Sent to Iframe:</strong>
+                <pre id="sentDataOutput" style="margin-top: 10px; background: white; padding: 10px; border-radius: 4px; font-size: 11px; max-height: 200px; overflow: auto;"></pre>
+            </div>
+            <p style="color: #666; margin-bottom: 10px;">
+                The demo app below is running inside an iframe and received the data above.
+            </p>
+            <iframe id="flowIframe" src="http://localhost:5173"></iframe>
+        </div>
+
+        <div class="response-section" id="responseSection" style="display: none;">
+            <h2>📥 Response Received from Iframe</h2>
+            <div style="background-color: #e8f5e9; padding: 15px; border-left: 4px solid #4CAF50; border-radius: 4px; margin-bottom: 15px;">
+                <strong>✅ The iframe processed the data and sent back this response:</strong>
+            </div>
+            <pre id="responseOutput"></pre>
+        </div>
+    </div>
+
+    <script>
+        const iframe = document.getElementById('flowIframe');
+        const statusDiv = document.getElementById('status');
+        const responseSection = document.getElementById('responseSection');
+        const responseOutput = document.getElementById('responseOutput');
+        const iframeSection = document.getElementById('iframeSection');
+        const sentDataOutput = document.getElementById('sentDataOutput');
+
+        // Mock data that simulates what Flow would send
+        const mockFlowData = {
+            query: {
+                DisplayName: "Sample Query",
+                Parameters: [
+                    {
+                        Name: "search_term",
+                        DisplayName: "Search Term",
+                        Type: "String",
+                        IsSingleValue: true,
+                        IsRequired: true,
+                        Description: "Enter search term",
+                        HideFromList: null,
+                        AutoCompleteProvider: "",
+                        OptionsProvider: "",
+                        Options: [],
+                        Category: "Filters",
+                        ParameterSubtitle: null,
+                        Value: "test",
+                        visible: true,
+                        Role: "",
+                        OntologyType: null,
+                        IsServerFilterAutoComplete: false
+                    },
+                    {
+                        Name: "enabled",
+                        DisplayName: "Enabled",
+                        Type: "Boolean",
+                        IsSingleValue: true,
+                        IsRequired: false,
+                        Description: "Enable feature",
+                        HideFromList: null,
+                        AutoCompleteProvider: "",
+                        OptionsProvider: "",
+                        Options: [],
+                        Category: "Settings",
+                        ParameterSubtitle: null,
+                        Value: true,
+                        visible: true,
+                        Role: "",
+                        OntologyType: null,
+                        IsServerFilterAutoComplete: false
+                    },
+                    {
+                        Name: "limit",
+                        DisplayName: "Result Limit",
+                        Type: "Int",
+                        IsSingleValue: true,
+                        IsRequired: false,
+                        Description: "Maximum results",
+                        HideFromList: null,
+                        AutoCompleteProvider: "",
+                        OptionsProvider: "",
+                        Options: [],
+                        Category: "Settings",
+                        ParameterSubtitle: null,
+                        Value: 100,
+                        visible: true,
+                        Role: "",
+                        OntologyType: null,
+                        IsServerFilterAutoComplete: false
+                    }
+                ],
+                Fields: [
+                    {
+                        Name: "id",
+                        DisplayName: "ID",
+                        Type: "int"
+                    },
+                    {
+                        Name: "name",
+                        DisplayName: "Name",
+                        Type: "string"
+                    },
+                    {
+                        Name: "created_at",
+                        DisplayName: "Created At",
+                        Type: "datetime"
+                    },
+                    {
+                        Name: "location",
+                        DisplayName: "Location",
+                        Type: "geojson",
+                        GeoContent: true
+                    }
+                ],
+                iframeFieldsToFilter: {}
+            },
+            connectedQueries: [
+                {
+                    id: "query-1",
+                    UniqueName: "user_analytics",
+                    Name: "User Analytics Query",
+                    Description: "Analyze user behavior and engagement metrics over time",
+                    Type: "query",
+                    Parameters: [
+                        {
+                            Name: "user_id",
+                            DisplayName: "User ID",
+                            Type: "String",
+                            IsSingleValue: true,
+                            IsRequired: true,
+                            Description: "Enter user ID",
+                            HideFromList: null,
+                            AutoCompleteProvider: "",
+                            OptionsProvider: "",
+                            Options: [],
+                            Category: "Filters",
+                            ParameterSubtitle: null,
+                            Value: "",
+                            visible: true,
+                            Role: "",
+                            OntologyType: null,
+                            IsServerFilterAutoComplete: false
+                        },
+                        {
+                            Name: "start_date",
+                            DisplayName: "Start Date",
+                            Type: "DateTime",
+                            IsSingleValue: true,
+                            IsRequired: true,
+                            Description: "Analysis start date",
+                            HideFromList: null,
+                            AutoCompleteProvider: "",
+                            OptionsProvider: "",
+                            Options: [],
+                            Category: "Date Range",
+                            ParameterSubtitle: null,
+                            Value: "",
+                            visible: true,
+                            Role: "",
+                            OntologyType: null,
+                            IsServerFilterAutoComplete: false
+                        },
+                        {
+                            Name: "include_inactive",
+                            DisplayName: "Include Inactive Users",
+                            Type: "Boolean",
+                            IsSingleValue: true,
+                            IsRequired: false,
+                            Description: "Include inactive users in results",
+                            HideFromList: null,
+                            AutoCompleteProvider: "",
+                            OptionsProvider: "",
+                            Options: [],
+                            Category: "Filters",
+                            ParameterSubtitle: null,
+                            Value: false,
+                            visible: true,
+                            Role: "",
+                            OntologyType: null,
+                            IsServerFilterAutoComplete: false
+                        }
+                    ],
+                    Fields: [],
+                    Metadata: {
+                        Owner: "analytics_team"
+                    },
+                    Processes: [],
+                    ViewConfig: {},
+                    SavedProperties: {}
+                },
+                {
+                    id: "query-2",
+                    UniqueName: "sales_report",
+                    Name: "Sales Report Query",
+                    Description: "Generate comprehensive sales reports by region and time period",
+                    Type: "query",
+                    Parameters: [
+                        {
+                            Name: "region",
+                            DisplayName: "Region",
+                            Type: "String",
+                            IsSingleValue: true,
+                            IsRequired: true,
+                            Description: "Sales region",
+                            HideFromList: null,
+                            AutoCompleteProvider: "",
+                            OptionsProvider: "",
+                            Options: [],
+                            Category: "Location",
+                            ParameterSubtitle: null,
+                            Value: "",
+                            visible: true,
+                            Role: "",
+                            OntologyType: null,
+                            IsServerFilterAutoComplete: false
+                        },
+                        {
+                            Name: "min_amount",
+                            DisplayName: "Minimum Amount",
+                            Type: "Double",
+                            IsSingleValue: true,
+                            IsRequired: false,
+                            Description: "Minimum sale amount",
+                            HideFromList: null,
+                            AutoCompleteProvider: "",
+                            OptionsProvider: "",
+                            Options: [],
+                            Category: "Filters",
+                            ParameterSubtitle: null,
+                            Value: 0,
+                            visible: true,
+                            Role: "",
+                            OntologyType: null,
+                            IsServerFilterAutoComplete: false
+                        }
+                    ],
+                    Fields: [],
+                    Metadata: {
+                        Owner: "sales_team"
+                    },
+                    Processes: [],
+                    ViewConfig: {},
+                    SavedProperties: {}
+                }
+            ],
+            userName: "demo_user@example.com",
+            value: {
+                DisplayName: "Sample Query",
+                Parameters: [],
+                Fields: [],
+                iframeFieldsToFilter: {},
+                userDescriptions: {
+                    "User Analytics Query": {
+                        queryDescription: "This is a test note I added previously",
+                        parameters: {
+                            "User ID": "Use the internal user ID, not email",
+                            "Start Date": "Must be in YYYY-MM-DD format"
+                        }
+                    }
+                }
+            }
+        };
+
+        // Listen for messages from iframe
+        window.addEventListener('message', (event) => {
+            console.log('Received message from iframe:', event.data);
+            
+            if (event.data.type === 'iframe_is_ready') {
+                statusDiv.textContent = 'Status: ✅ Iframe is ready! Auto-sending data...';
+                statusDiv.style.backgroundColor = '#d4edda';
+                statusDiv.style.borderColor = '#28a745';
+                
+                // Automatically send data when iframe is ready
+                setTimeout(() => {
+                    sendDataToIframe();
+                }, 100);
+            } else if (event.data.type === 'set_parameter_value') {
+                statusDiv.textContent = 'Status: 💾 Received save response from iframe';
+                statusDiv.style.backgroundColor = '#d4edda';
+                statusDiv.style.borderColor = '#28a745';
+                
+                // Display the response in parent
+                responseSection.style.display = 'block';
+                try {
+                    const parsedValue = JSON.parse(event.data.value);
+                    responseOutput.textContent = JSON.stringify(parsedValue, null, 2);
+                } catch (e) {
+                    responseOutput.textContent = event.data.value;
+                }
+                
+                // Scroll to show the response
+                responseSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        });
+
+        function sendDataToIframe() {
+            const message = {
+                type: 'send_iframe_data',
+                ...mockFlowData
+            };
+            
+            // Show the iframe section
+            iframeSection.classList.add('open');
+            
+            // Display the sent data
+            sentDataOutput.textContent = JSON.stringify(message, null, 2);
+            
+            iframe.contentWindow.postMessage(message, '*');
+            statusDiv.textContent = 'Status: 📨 Data sent to iframe - iframe is now open';
+            statusDiv.style.backgroundColor = '#cce5ff';
+            statusDiv.style.borderColor = '#2196F3';
+            console.log('Sent data to iframe:', message);
+        }
+
+        function closeIframe() {
+            iframeSection.classList.remove('open');
+            statusDiv.textContent = 'Status: ✖️ Iframe closed';
+            statusDiv.style.backgroundColor = '#f8d7da';
+            statusDiv.style.borderColor = '#f44336';
+            console.log('Iframe closed');
+        }
+
+        function triggerSave() {
+            const message = {
+                type: 'save_parameter_value'
+            };
+            
+            iframe.contentWindow.postMessage(message, '*');
+            statusDiv.textContent = 'Status: ⏳ Triggered save, waiting for response...';
+            statusDiv.style.backgroundColor = '#fff3cd';
+            statusDiv.style.borderColor = '#ffc107';
+            console.log('Triggered save');
+        }
+
+        function triggerCancel() {
+            const message = {
+                type: 'cancel_parameter_value'
+            };
+            
+            iframe.contentWindow.postMessage(message, '*');
+            statusDiv.textContent = 'Status: ❌ Triggered cancel';
+            statusDiv.style.backgroundColor = '#f8d7da';
+            statusDiv.style.borderColor = '#f44336';
+            console.log('Triggered cancel');
+        }
+
+        // Auto-send data when iframe loads (after a short delay)
+        iframe.addEventListener('load', () => {
+            setTimeout(() => {
+                console.log('Iframe loaded, waiting for ready message...');
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
+
