@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
@@ -15,6 +16,7 @@ interface ToolCubeSelectorProps {
 }
 
 export function ToolCubeSelector({ onToolCubeSelected, selectedToolCubeNames }: ToolCubeSelectorProps) {
+  const { t } = useTranslation();
   const [toolCubeNames, setToolCubeNames] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -88,7 +90,7 @@ export function ToolCubeSelector({ onToolCubeSelected, selectedToolCubeNames }: 
     return (
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, padding: 2 }}>
         <CircularProgress size={24} />
-        <span>Loading tool cubes...</span>
+        <span>{t('toolCubeSelector.loadingToolCubes')}</span>
       </Box>
     );
   }
@@ -96,7 +98,7 @@ export function ToolCubeSelector({ onToolCubeSelected, selectedToolCubeNames }: 
   if (error && toolCubeNames.length === 0) {
     return (
       <Alert severity="error" sx={{ mb: 2 }}>
-        Error loading tool cubes: {error}
+        {t('toolCubeSelector.errorLoading')}: {error}
       </Alert>
     );
   }
@@ -104,18 +106,18 @@ export function ToolCubeSelector({ onToolCubeSelected, selectedToolCubeNames }: 
   return (
     <Box sx={{ mb: 3 }}>
       <FormControl fullWidth>
-        <InputLabel id="tool-cube-select-label">Select a Tool Cube to Add</InputLabel>
+        <InputLabel id="tool-cube-select-label">{t('toolCubeSelector.selectLabel')}</InputLabel>
         <Select
           labelId="tool-cube-select-label"
           id="tool-cube-select"
           value={selectedToolCube}
-          label="Select a Tool Cube to Add"
+          label={t('toolCubeSelector.selectLabel')}
           onChange={handleToolCubeChange}
           disabled={fetchingMetadata || availableToolCubes.length === 0}
         >
           {availableToolCubes.length === 0 ? (
             <MenuItem value="" disabled>
-              All tool cubes have been added
+              {t('toolCubeSelector.allAdded')}
             </MenuItem>
           ) : (
             availableToolCubes.map((toolCubeName) => (
@@ -131,7 +133,7 @@ export function ToolCubeSelector({ onToolCubeSelected, selectedToolCubeNames }: 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
           <CircularProgress size={16} />
           <span style={{ fontSize: '0.875rem', color: '#666' }}>
-            Loading tool cube metadata...
+            {t('toolCubeSelector.loadingMetadata')}
           </span>
         </Box>
       )}

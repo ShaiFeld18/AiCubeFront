@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import ReactMarkdown from 'react-markdown';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -15,6 +16,7 @@ interface PlanPageProps {
 }
 
 export function PlanPage({ plan, loading, onGeneratePlan }: PlanPageProps) {
+  const { t } = useTranslation();
   const [error, setError] = useState<string>('');
 
   const handleSend = async () => {
@@ -22,7 +24,7 @@ export function PlanPage({ plan, loading, onGeneratePlan }: PlanPageProps) {
     try {
       await onGeneratePlan();
     } catch (err) {
-      setError('Failed to generate plan. Please try again.');
+      setError(t('plan.error'));
     }
   };
 
@@ -30,7 +32,7 @@ export function PlanPage({ plan, loading, onGeneratePlan }: PlanPageProps) {
     <Box sx={{ py: 3 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h4" component="h1">
-          Plan
+          {t('plan.title')}
         </Typography>
         <Button
           variant="contained"
@@ -40,7 +42,7 @@ export function PlanPage({ plan, loading, onGeneratePlan }: PlanPageProps) {
           onClick={handleSend}
           disabled={loading}
         >
-          {loading ? 'Generating...' : 'Send'}
+          {loading ? t('plan.generating') : t('plan.send')}
         </Button>
       </Box>
 
@@ -54,7 +56,7 @@ export function PlanPage({ plan, loading, onGeneratePlan }: PlanPageProps) {
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 8 }}>
           <CircularProgress size={60} />
           <Typography variant="body1" sx={{ mt: 2 }} color="text.secondary">
-            Generating plan...
+            {t('plan.generatingPlan')}
           </Typography>
         </Box>
       )}
@@ -62,7 +64,7 @@ export function PlanPage({ plan, loading, onGeneratePlan }: PlanPageProps) {
       {!loading && !plan && (
         <Paper elevation={2} sx={{ p: 4, textAlign: 'center', bgcolor: 'background.default' }}>
           <Typography variant="body1" color="text.secondary">
-            Click "Send" to generate an AI agent plan based on your selected tools, queries, and prompt.
+            {t('plan.clickToGenerate')}
           </Typography>
         </Paper>
       )}

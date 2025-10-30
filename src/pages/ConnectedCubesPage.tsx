@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { ItemList } from '../components/ItemList';
 import { FlowCube, UserDescriptions } from '../flow/types';
 import Box from '@mui/material/Box';
@@ -16,16 +17,18 @@ export function ConnectedCubesPage({
   onConnectedCubesDescriptionsChange,
   highlightItemId,
 }: ConnectedCubesPageProps) {
+  const { t } = useTranslation();
+  
   return (
     <Box sx={{ py: 3 }}>
       <Typography variant="h4" component="h1" gutterBottom>
-        Connected Cubes
+        {t('connectedCubes.title')}
       </Typography>
       <ItemList 
         items={linkedQueries}
         initialDescriptions={connectedCubesDescriptions}
         onDescriptionsChange={onConnectedCubesDescriptionsChange}
-        emptyMessage="No connected cubes available"
+        emptyMessage={t('itemList.emptyMessage')}
         highlightItemId={highlightItemId}
       />
     </Box>

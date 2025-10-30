@@ -1,0 +1,56 @@
+{
+  "tabs": {
+    "plan": "תוכנית",
+    "prompt": "הנחיה",
+    "toolCubes": "קוביות כלים",
+    "cubes": "קוביות"
+  },
+  "app": {
+    "waitingForData": "ממתין לנתונים מחלון Flow..."
+  },
+  "plan": {
+    "title": "תוכנית",
+    "send": "שלח",
+    "generating": "מייצר...",
+    "generatingPlan": "מייצר תוכנית...",
+    "clickToGenerate": "לחץ על \"שלח\" כדי ליצור תוכנית סוכן AI על בסיס הכלים, השאילתות וההנחיה שנבחרו.",
+    "error": "יצירת התוכנית נכשלה. אנא נסה שוב."
+  },
+  "prompt": {
+    "title": "הנחיה",
+    "instructionText": "גרור הפניות מהתפריט השמאלי כדי להוסיף אותן בפורמט [[toolCube:name]] או [[connectedCube:name:parameter]].",
+    "placeholder": "התחל לכתוב את ההנחיה שלך כאן... גרור הפניות משמאל כדי לכלול אותן בטקסט."
+  },
+  "toolCubes": {
+    "title": "קוביות כלים"
+  },
+  "connectedCubes": {
+    "title": "קוביות מחוברות"
+  },
+  "itemList": {
+    "addYourNotes": "הוסף הערות",
+    "addNotesPlaceholder": "הוסף תיאור או הערות משלך...",
+    "addParamNotesPlaceholder": "הוסף הערות משלך על פרמטר זה...",
+    "noParameters": "אין פרמטרים זמינים",
+    "emptyMessage": "אין פריטים זמינים",
+    "noToolCubesSelected": "לא נבחרו קוביות כלים. בחר קובית כלים מהתפריט הנפתח למעלה.",
+    "noConnectedCubes": "אין קוביות מחוברות זמינות"
+  },
+  "toolCubeSelector": {
+    "selectLabel": "בחר קובית כלים להוספה",
+    "loadingToolCubes": "טוען קוביות כלים...",
+    "loadingMetadata": "טוען מטא-דאטה של קובית כלים...",
+    "errorLoading": "שגיאה בטעינת קוביות כלים",
+    "allAdded": "כל קוביות הכלים נוספו"
+  },
+  "referenceMenu": {
+    "title": "הפניות",
+    "dragInstruction": "גרור פריטים כדי להוסיף אותם להנחיה שלך",
+    "toolCubes": "קוביות כלים",
+    "connectedCubes": "קוביות מחוברות",
+    "noToolCubes": "לא נבחרו קוביות כלים",
+    "noConnectedCubes": "אין קוביות מחוברות",
+    "parameters": "פרמטרים:"
+  }
+}
+

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
@@ -19,6 +20,7 @@ interface ReferenceMenuProps {
 }
 
 export function ReferenceMenu({ toolCubes, queries, onDragStart }: ReferenceMenuProps) {
+  const { t } = useTranslation();
   const [expandedToolCube, setExpandedToolCube] = useState<string | false>(false);
   const [expandedQuery, setExpandedQuery] = useState<string | false>(false);
 
@@ -139,20 +141,20 @@ export function ReferenceMenu({ toolCubes, queries, onDragStart }: ReferenceMenu
   return (
     <Box sx={{ width: '100%', maxHeight: '100%', overflowY: 'auto' }}>
       <Typography variant="h6" sx={{ p: 2, pb: 1 }}>
-        References
+        {t('referenceMenu.title')}
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ px: 2, pb: 2 }}>
-        Drag items to add them to your prompt
+        {t('referenceMenu.dragInstruction')}
       </Typography>
 
       {/* Tool Cubes Section */}
       <Box sx={{ mb: 2 }}>
         <Typography variant="subtitle2" sx={{ px: 2, py: 1, bgcolor: 'primary.light', color: 'primary.contrastText' }}>
-          Tool Cubes
+          {t('referenceMenu.toolCubes')}
         </Typography>
         {toolCubes.length === 0 ? (
           <Typography variant="body2" color="text.secondary" sx={{ p: 2 }}>
-            No tool cubes selected
+            {t('referenceMenu.noToolCubes')}
           </Typography>
         ) : (
           toolCubes.map((toolCube) => (
@@ -180,7 +182,7 @@ export function ReferenceMenu({ toolCubes, queries, onDragStart }: ReferenceMenu
                     <>
                       <ListItem sx={{ pl: 2, bgcolor: 'grey.50' }}>
                         <Typography variant="caption" color="text.secondary">
-                          Parameters:
+                          {t('referenceMenu.parameters')}
                         </Typography>
                       </ListItem>
                       {toolCube.Parameters.map((param, idx) => 
@@ -202,11 +204,11 @@ export function ReferenceMenu({ toolCubes, queries, onDragStart }: ReferenceMenu
       {/* Connected Cubes Section */}
       <Box>
         <Typography variant="subtitle2" sx={{ px: 2, py: 1, bgcolor: 'secondary.light', color: 'secondary.contrastText' }}>
-          Connected Cubes
+          {t('referenceMenu.connectedCubes')}
         </Typography>
         {queries.length === 0 ? (
           <Typography variant="body2" color="text.secondary" sx={{ p: 2 }}>
-            No connected cubes
+            {t('referenceMenu.noConnectedCubes')}
           </Typography>
         ) : (
           queries.map((query) => (
@@ -234,7 +236,7 @@ export function ReferenceMenu({ toolCubes, queries, onDragStart }: ReferenceMenu
                     <>
                       <ListItem sx={{ pl: 2, bgcolor: 'grey.50' }}>
                         <Typography variant="caption" color="text.secondary">
-                          Parameters:
+                          {t('referenceMenu.parameters')}
                         </Typography>
                       </ListItem>
                       {query.Parameters.map((param, idx) => 

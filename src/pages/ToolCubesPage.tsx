@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { ToolCubeSelector } from '../components/ToolCubeSelector';
 import { ItemList } from '../components/ItemList';
 import { FlowCube, ToolCubeDescriptions } from '../flow/types';
@@ -21,12 +22,13 @@ export function ToolCubesPage({
   onToolCubeDelete,
   highlightItemId,
 }: ToolCubesPageProps) {
+  const { t } = useTranslation();
   const selectedToolCubeNames = selectedToolCubes.map(t => t.Name || t.UniqueName);
 
   return (
     <Box sx={{ py: 3 }}>
       <Typography variant="h4" component="h1" gutterBottom>
-        Tool Cubes
+        {t('toolCubes.title')}
       </Typography>
       <ToolCubeSelector 
         onToolCubeSelected={onToolCubeSelected}
@@ -37,7 +39,7 @@ export function ToolCubesPage({
         initialDescriptions={toolCubeDescriptions}
         onDescriptionsChange={onToolCubeDescriptionsChange}
         onDelete={onToolCubeDelete}
-        emptyMessage="No tool cubes selected. Choose a tool cube from the dropdown above."
+        emptyMessage={t('itemList.emptyMessage')}
         highlightItemId={highlightItemId}
       />
     </Box>

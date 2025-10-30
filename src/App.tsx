@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useFlow, LoadDataParams, FlowResponseBuilder, UserDescriptions, ToolCubeDescriptions, FlowCube } from './flow';
 import { PromptPage } from './pages/PromptPage';
 import { ToolCubesPage } from './pages/ToolCubesPage';
@@ -11,6 +12,10 @@ import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Slide from '@mui/material/Slide';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
 
 // Helper function to clean up descriptions by removing entries that don't match actual items
 function cleanupDescriptions(
@@ -63,6 +68,7 @@ function cleanupDescriptions(
 }
 
 function App() {
+  const { t, i18n } = useTranslation();
   const [receivedData, setReceivedData] = useState<LoadDataParams | null>(null);
   const [connectedCubesDescriptions, setConnectedCubesDescriptions] = useState<UserDescriptions>({});
   const [selectedToolCubes, setSelectedToolCubes] = useState<FlowCube[]>([]);
@@ -70,8 +76,24 @@ function App() {
   const [promptContent, setPromptContent] = useState<string>('');
   const [plan, setPlan] = useState<string>('');
   const [planLoading, setPlanLoading] = useState<boolean>(false);
-  const [currentPage, setCurrentPage] = useState(3);
+  const [currentPage, setCurrentPage] = useState(0);
   const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('left');
+
+  // Create theme with RTL support
+  const theme = createTheme({
+    direction: i18n.language === 'he' ? 'rtl' : 'ltr',
+  });
+
+  // Update document direction when language changes
+  useEffect(() => {
+    document.dir = i18n.language === 'he' ? 'rtl' : 'ltr';
+  }, [i18n.language]);
+
+  const toggleLanguage = () => {
+    const newLang = i18n.language === 'en' ? 'he' : 'en';
+    i18n.changeLanguage(newLang);
+    localStorage.setItem('language', newLang);
+  };
 
   useFlow({
     onLoadData: async (data: LoadDataParams) => {
@@ -251,33 +273,50 @@ function App() {
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-      {/* Top Navigation Bar */}
-      <AppBar position="static" sx={{ bgcolor: 'primary.main' }}>
-        <Tabs 
-          value={currentPage} 
-          onChange={handleTabChange}
-          textColor="inherit"
-          indicatorColor="secondary"
-          sx={{ 
-            '& .MuiTab-root': { 
-              minWidth: 120,
-              fontWeight: 'bold'
-            }
-          }}
-        >
-          <Tab label="Plan" />
-          <Tab label="Prompt" />
-          <Tab label="Tool Cubes" />
-          <Tab label="Cubes" />
-        </Tabs>
-      </AppBar>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+        {/* Top Navigation Bar */}
+        <AppBar position="static" sx={{ bgcolor: 'primary.main' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Tabs 
+              value={currentPage} 
+              onChange={handleTabChange}
+              textColor="inherit"
+              indicatorColor="secondary"
+              sx={{ 
+                flexGrow: 1,
+                '& .MuiTab-root': { 
+                  minWidth: 120,
+                  fontWeight: 'bold'
+                }
+              }}
+            >
+              <Tab label={t('tabs.cubes')} />
+              <Tab label={t('tabs.toolCubes')} />
+              <Tab label={t('tabs.prompt')} />
+              <Tab label={t('tabs.plan')} />
+            </Tabs>
+            <Tooltip title={i18n.language === 'en' ? 'Switch to Hebrew' : 'עבור לאנגלית'}>
+              <IconButton 
+                onClick={toggleLanguage}
+                sx={{ 
+                  color: 'white',
+                  fontSize: '1.5rem',
+                  mr: 2
+                }}
+              >
+                {i18n.language === 'en' ? '🇮🇱' : '🇬🇧'}
+              </IconButton>
+            </Tooltip>
+          </Box>
+        </AppBar>
 
       {/* Page Content */}
       <Container maxWidth="lg" sx={{ flexGrow: 1, pt: 2 }}>
         {receivedData ? (
           <Box sx={{ position: 'relative', width: '100%' }}>
-            {/* Plan Page */}
+            {/* Cubes Page */}
             <Slide
               direction={slideDirection === 'right' ? 'right' : 'left'}
               in={currentPage === 0}
@@ -296,15 +335,15 @@ function App() {
                   left: 0
                 }}
               >
-                <PlanPage
-                  plan={plan}
-                  loading={planLoading}
-                  onGeneratePlan={handleGeneratePlan}
+                <ConnectedCubesPage
+                  linkedQueries={receivedData.linkedQueries}
+                  connectedCubesDescriptions={connectedCubesDescriptions}
+                  onConnectedCubesDescriptionsChange={handleConnectedCubesDescriptionsChange}
                 />
               </Box>
             </Slide>
 
-            {/* Prompt Page */}
+            {/* Tool Cubes Page */}
             <Slide
               direction={slideDirection === 'left' ? 'left' : 'right'}
               in={currentPage === 1}
@@ -323,16 +362,17 @@ function App() {
                   left: 0
                 }}
               >
-                <PromptPage
-                  toolCubes={selectedToolCubes}
-                  queries={receivedData.linkedQueries}
-                  promptContent={promptContent}
-                  onPromptChange={handlePromptChange}
+                <ToolCubesPage
+                  selectedToolCubes={selectedToolCubes}
+                  toolCubeDescriptions={toolCubeDescriptions}
+                  onToolCubeSelected={handleToolCubeSelected}
+                  onToolCubeDescriptionsChange={handleToolCubeDescriptionsChange}
+                  onToolCubeDelete={handleToolCubeDelete}
                 />
               </Box>
             </Slide>
 
-            {/* Tool Cubes Page */}
+            {/* Prompt Page */}
             <Slide
               direction={slideDirection === 'left' ? 'left' : 'right'}
               in={currentPage === 2}
@@ -351,17 +391,16 @@ function App() {
                   left: 0
                 }}
               >
-                <ToolCubesPage
-                  selectedToolCubes={selectedToolCubes}
-                  toolCubeDescriptions={toolCubeDescriptions}
-                  onToolCubeSelected={handleToolCubeSelected}
-                  onToolCubeDescriptionsChange={handleToolCubeDescriptionsChange}
-                  onToolCubeDelete={handleToolCubeDelete}
+                <PromptPage
+                  toolCubes={selectedToolCubes}
+                  queries={receivedData.linkedQueries}
+                  promptContent={promptContent}
+                  onPromptChange={handlePromptChange}
                 />
               </Box>
             </Slide>
 
-            {/* Cubes Page */}
+            {/* Plan Page */}
             <Slide
               direction={slideDirection === 'left' ? 'left' : 'right'}
               in={currentPage === 3}
@@ -380,10 +419,10 @@ function App() {
                   left: 0
                 }}
               >
-                <ConnectedCubesPage
-                  linkedQueries={receivedData.linkedQueries}
-                  connectedCubesDescriptions={connectedCubesDescriptions}
-                  onConnectedCubesDescriptionsChange={handleConnectedCubesDescriptionsChange}
+                <PlanPage
+                  plan={plan}
+                  loading={planLoading}
+                  onGeneratePlan={handleGeneratePlan}
                 />
               </Box>
             </Slide>
@@ -397,12 +436,13 @@ function App() {
             mt: 3
           }}>
             <Box component="p" sx={{ color: 'text.secondary' }}>
-              Waiting for data from Flow parent window...
+              {t('app.waitingForData')}
             </Box>
           </Box>
         )}
       </Container>
-    </Box>
+      </Box>
+    </ThemeProvider>
   );
 }
 

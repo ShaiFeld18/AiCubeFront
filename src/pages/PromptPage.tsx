@@ -1,4 +1,5 @@
 import { useRef, useMemo, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import Box from '@mui/material/Box';
@@ -21,6 +22,7 @@ export function PromptPage({
   promptContent,
   onPromptChange,
 }: PromptPageProps) {
+  const { t } = useTranslation();
   const quillRef = useRef<ReactQuill>(null);
   const draggedReferenceRef = useRef<Reference | null>(null);
 
@@ -105,7 +107,7 @@ export function PromptPage({
   return (
     <Box sx={{ py: 3 }}>
       <Typography variant="h4" component="h1" gutterBottom>
-        Prompt
+        {t('prompt.title')}
       </Typography>
 
       <Grid container spacing={2}>
@@ -135,7 +137,7 @@ export function PromptPage({
           >
             <Box sx={{ p: 2 }}>
               <Typography variant="body2" color="text.secondary" gutterBottom>
-                Drag references from the left menu to insert them as [[toolCube:name]] or [[connectedCube:name:parameter]] format.
+                {t('prompt.instructionText')}
               </Typography>
             </Box>
             <Box sx={{ 
@@ -166,7 +168,7 @@ export function PromptPage({
                 onChange={handleContentChange}
                 modules={modules}
                 formats={formats}
-                placeholder="Start writing your prompt here... Drag references from the left to include them inline."
+                placeholder={t('prompt.placeholder')}
               />
             </Box>
           </Paper>

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
@@ -33,6 +34,7 @@ export function ItemList({
   emptyMessage = 'No items available',
   highlightItemId
 }: ItemListProps) {
+  const { t } = useTranslation();
   const [descriptions, setDescriptions] = useState<InternalDescriptions>({
     items: {},
     parameters: {}
@@ -244,8 +246,8 @@ export function ItemList({
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               {/* User Description for Item */}
               <TextField
-                label="Add Your Notes"
-                placeholder="Add your own description or notes..."
+                label={t('itemList.addYourNotes')}
+                placeholder={t('itemList.addNotesPlaceholder')}
                 multiline
                 rows={2}
                 value={descriptions.items[item.id] || ''}
@@ -290,8 +292,8 @@ export function ItemList({
                           </Typography>
                         )}
                         <TextField
-                          label="Add Your Notes"
-                          placeholder="Add your own notes about this parameter..."
+                          label={t('itemList.addYourNotes')}
+                          placeholder={t('itemList.addParamNotesPlaceholder')}
                           multiline
                           rows={1}
                           value={descriptions.parameters[paramKey] || ''}
@@ -307,7 +309,7 @@ export function ItemList({
                 </Box>
               ) : (
                 <Typography color="text.secondary">
-                  No parameters available
+                  {t('itemList.noParameters')}
                 </Typography>
               )}
             </Box>

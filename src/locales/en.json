@@ -1,0 +1,56 @@
+{
+  "tabs": {
+    "plan": "Plan",
+    "prompt": "Prompt",
+    "toolCubes": "Tool Cubes",
+    "cubes": "Cubes"
+  },
+  "app": {
+    "waitingForData": "Waiting for data from Flow parent window..."
+  },
+  "plan": {
+    "title": "Plan",
+    "send": "Send",
+    "generating": "Generating...",
+    "generatingPlan": "Generating plan...",
+    "clickToGenerate": "Click \"Send\" to generate an AI agent plan based on your selected tools, queries, and prompt.",
+    "error": "Failed to generate plan. Please try again."
+  },
+  "prompt": {
+    "title": "Prompt",
+    "instructionText": "Drag references from the left menu to insert them as [[toolCube:name]] or [[connectedCube:name:parameter]] format.",
+    "placeholder": "Start writing your prompt here... Drag references from the left to include them inline."
+  },
+  "toolCubes": {
+    "title": "Tool Cubes"
+  },
+  "connectedCubes": {
+    "title": "Connected Cubes"
+  },
+  "itemList": {
+    "addYourNotes": "Add Your Notes",
+    "addNotesPlaceholder": "Add your own description or notes...",
+    "addParamNotesPlaceholder": "Add your own notes about this parameter...",
+    "noParameters": "No parameters available",
+    "emptyMessage": "No items available",
+    "noToolCubesSelected": "No tool cubes selected. Choose a tool cube from the dropdown above.",
+    "noConnectedCubes": "No connected cubes available"
+  },
+  "toolCubeSelector": {
+    "selectLabel": "Select a Tool Cube to Add",
+    "loadingToolCubes": "Loading tool cubes...",
+    "loadingMetadata": "Loading tool cube metadata...",
+    "errorLoading": "Error loading tool cubes",
+    "allAdded": "All tool cubes have been added"
+  },
+  "referenceMenu": {
+    "title": "References",
+    "dragInstruction": "Drag items to add them to your prompt",
+    "toolCubes": "Tool Cubes",
+    "connectedCubes": "Connected Cubes",
+    "noToolCubes": "No tool cubes selected",
+    "noConnectedCubes": "No connected cubes",
+    "parameters": "Parameters:"
+  }
+}
+
