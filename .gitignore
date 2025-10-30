@@ -32,3 +32,6 @@ yarn-error.log*
 # TypeScript cache
 *.tsbuildinfo
 
+# Mock API server (optional - include if you want to commit it)
+# mock-api-server.js
+

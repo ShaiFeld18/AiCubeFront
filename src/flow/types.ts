@@ -72,12 +72,15 @@ export type UserDescriptions = {
   };
 };
 
+export type ToolDescriptions = UserDescriptions; // Same structure as UserDescriptions
+
 export type FlowResponse = {
   Parameters: Partial<IFlowParameter>[];
   Fields: IField[];
   DisplayName: string;
   iframeFieldsToFilter: { [key: string]: string };
   userDescriptions?: UserDescriptions;
+  toolDescriptions?: ToolDescriptions;
 };
 
 export type FlowCube = {

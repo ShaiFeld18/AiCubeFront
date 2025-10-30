@@ -21,6 +21,20 @@ src/
 └── main.tsx          # React entry point
 ```
 
+## Configuration (`src/config.ts`)
+
+API endpoint configuration:
+```typescript
+export const API_CONFIG = {
+  TOOLS_LIST_URL: 'http://localhost:3000/api/tools',
+  TOOL_METADATA_URL: (toolName: string) => `http://localhost:3000/api/tools/${toolName}`,
+};
+```
+
+**Expected API Responses:**
+- `GET /api/tools` - Returns array of tool names: `["tool1", "tool2", ...]`
+- `GET /api/tools/{toolName}` - Returns FlowCube metadata for the tool
+
 ## Library Components (`src/flow/`)
 
 ### `useFlow` Hook
@@ -58,19 +72,25 @@ The demo application (`src/App.tsx` & `src/main.tsx`) demonstrates the Flow ifra
 ### UI Components
 
 The project uses Material-UI (MUI) for the user interface:
-- `src/components/QueryList.tsx` - Displays connected queries as an expandable accordion list with editable user notes
+- `src/components/ItemList.tsx` - Generic accordion list component for both queries and tools with editable user notes
+- `src/components/ToolSelector.tsx` - Dropdown to select and add tools from an API
 
 **Features:**
-- View query names and descriptions
-- Expand queries to see their parameters
-- Add personal notes/descriptions to queries and parameters
-- User notes are displayed with a 📝 icon in the query header
+- View query/tool names and descriptions
+- Expand items to see their parameters
+- Add personal notes/descriptions to queries/tools and parameters
+- User notes are displayed with a 📝 icon in the header
 - User descriptions are persisted when saving and restored when reopening
-- Descriptions are returned in a separate dictionary format:
+- Tool selection with API integration:
+  - Fetches available tools from API endpoint
+  - Loads tool metadata when selected
+  - Prevents duplicate tool selection
+  - Shows loading and error states
+- Descriptions are returned in separate dictionaries for queries and tools:
   ```typescript
   {
-    "Query Display Name": {
-      queryDescription: "User's note about the query",
+    "Item Display Name": {
+      queryDescription: "User's note about the item",
       parameters: {
         "Parameter Display Name": "User's note about parameter"
       }
@@ -86,12 +106,17 @@ npm install
 
 ### Running the Demo
 
-1. Start the Vite development server:
+1. **Start the mock API server** (for tools feature):
+```bash
+node mock-api-server.js
+```
+
+2. **Start the Vite development server**:
 ```bash
 npm run dev
 ```
 
-2. Open `parent.html` in your browser (you can double-click it or use a local web server)
+3. **Open `parent.html`** in your browser (you can double-click it or use a local web server)
 
 3. Use the controls in the parent window to:
    - **Send Data & Open Iframe**: Opens the iframe and sends mock Flow data to it

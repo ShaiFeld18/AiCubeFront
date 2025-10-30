@@ -9,38 +9,44 @@ import Chip from '@mui/material/Chip';
 import TextField from '@mui/material/TextField';
 import { FlowCube, UserDescriptions } from '../flow/types';
 
-interface QueryListProps {
-  queries: FlowCube[];
-  initialUserDescriptions?: UserDescriptions;
-  onUserDescriptionsChange?: (descriptions: UserDescriptions) => void;
+interface ItemListProps {
+  items: FlowCube[];
+  initialDescriptions?: UserDescriptions;
+  onDescriptionsChange?: (descriptions: UserDescriptions) => void;
+  emptyMessage?: string;
 }
 
-interface InternalUserDescriptions {
-  queries: { [queryId: string]: string };
-  parameters: { [key: string]: string }; // key format: "queryId-paramIndex"
+interface InternalDescriptions {
+  items: { [itemId: string]: string };
+  parameters: { [key: string]: string }; // key format: "itemId-paramIndex"
 }
 
-export function QueryList({ queries, initialUserDescriptions, onUserDescriptionsChange }: QueryListProps) {
-  const [userDescriptions, setUserDescriptions] = useState<InternalUserDescriptions>({
-    queries: {},
+export function ItemList({ 
+  items, 
+  initialDescriptions, 
+  onDescriptionsChange,
+  emptyMessage = 'No items available'
+}: ItemListProps) {
+  const [descriptions, setDescriptions] = useState<InternalDescriptions>({
+    items: {},
     parameters: {}
   });
 
-  // Load initial user descriptions
+  // Load initial descriptions
   useEffect(() => {
-    if (initialUserDescriptions) {
-      const internal: InternalUserDescriptions = { queries: {}, parameters: {} };
+    if (initialDescriptions) {
+      const internal: InternalDescriptions = { items: {}, parameters: {} };
       
-      Object.entries(initialUserDescriptions).forEach(([queryDisplayName, data]) => {
-        const query = queries.find(q => (q.Name || q.UniqueName) === queryDisplayName);
-        if (query) {
-          internal.queries[query.id] = data.queryDescription || '';
+      Object.entries(initialDescriptions).forEach(([itemDisplayName, data]) => {
+        const item = items.find(i => (i.Name || i.UniqueName) === itemDisplayName);
+        if (item) {
+          internal.items[item.id] = data.queryDescription || '';
           
-          if (query.Parameters) {
-            query.Parameters.forEach((param, paramIndex) => {
+          if (item.Parameters) {
+            item.Parameters.forEach((param, paramIndex) => {
               const paramDisplayName = param.DisplayName || param.Name;
               if (paramDisplayName && data.parameters?.[paramDisplayName]) {
-                const key = `${query.id}-${paramIndex}`;
+                const key = `${item.id}-${paramIndex}`;
                 internal.parameters[key] = data.parameters[paramDisplayName];
               }
             });
@@ -48,24 +54,24 @@ export function QueryList({ queries, initialUserDescriptions, onUserDescriptions
         }
       });
       
-      setUserDescriptions(internal);
+      setDescriptions(internal);
     }
-  }, [initialUserDescriptions, queries]);
+  }, [initialDescriptions, items]);
 
   // Convert internal format to external format and notify parent
   useEffect(() => {
     const external: UserDescriptions = {};
     
-    queries.forEach(query => {
-      const queryDisplayName = query.Name || query.UniqueName;
-      const queryDesc = userDescriptions.queries[query.id] || '';
+    items.forEach(item => {
+      const itemDisplayName = item.Name || item.UniqueName;
+      const itemDesc = descriptions.items[item.id] || '';
       const paramDescs: { [key: string]: string } = {};
       
-      if (query.Parameters) {
-        query.Parameters.forEach((param, paramIndex) => {
+      if (item.Parameters) {
+        item.Parameters.forEach((param, paramIndex) => {
           const paramDisplayName = param.DisplayName || param.Name;
-          const key = `${query.id}-${paramIndex}`;
-          const paramDesc = userDescriptions.parameters[key] || '';
+          const key = `${item.id}-${paramIndex}`;
+          const paramDesc = descriptions.parameters[key] || '';
           
           if (paramDesc && paramDisplayName) {
             paramDescs[paramDisplayName] = paramDesc;
@@ -73,32 +79,32 @@ export function QueryList({ queries, initialUserDescriptions, onUserDescriptions
         });
       }
       
-      if (queryDesc || Object.keys(paramDescs).length > 0) {
-        external[queryDisplayName] = {
-          queryDescription: queryDesc,
+      if (itemDesc || Object.keys(paramDescs).length > 0) {
+        external[itemDisplayName] = {
+          queryDescription: itemDesc,
           parameters: paramDescs
         };
       }
     });
     
-    if (onUserDescriptionsChange) {
-      onUserDescriptionsChange(external);
+    if (onDescriptionsChange) {
+      onDescriptionsChange(external);
     }
-  }, [userDescriptions, queries, onUserDescriptionsChange]);
+  }, [descriptions, items]); // Removed onDescriptionsChange from dependencies
 
-  const handleQueryDescriptionChange = (queryId: string, value: string) => {
-    setUserDescriptions(prev => ({
+  const handleItemDescriptionChange = (itemId: string, value: string) => {
+    setDescriptions(prev => ({
       ...prev,
-      queries: {
-        ...prev.queries,
-        [queryId]: value
+      items: {
+        ...prev.items,
+        [itemId]: value
       }
     }));
   };
 
-  const handleParameterDescriptionChange = (queryId: string, paramIndex: number, value: string) => {
-    const key = `${queryId}-${paramIndex}`;
-    setUserDescriptions(prev => ({
+  const handleParameterDescriptionChange = (itemId: string, paramIndex: number, value: string) => {
+    const key = `${itemId}-${paramIndex}`;
+    setDescriptions(prev => ({
       ...prev,
       parameters: {
         ...prev.parameters,
@@ -107,7 +113,7 @@ export function QueryList({ queries, initialUserDescriptions, onUserDescriptions
     }));
   };
 
-  if (!queries || queries.length === 0) {
+  if (!items || items.length === 0) {
     return (
       <Box sx={{ 
         padding: 3, 
@@ -116,7 +122,7 @@ export function QueryList({ queries, initialUserDescriptions, onUserDescriptions
         borderRadius: 1
       }}>
         <Typography color="text.secondary">
-          No linked queries available
+          {emptyMessage}
         </Typography>
       </Box>
     );
@@ -124,12 +130,12 @@ export function QueryList({ queries, initialUserDescriptions, onUserDescriptions
 
   return (
     <Box>
-      {queries.map((query, index) => (
-        <Accordion key={query.id || index} sx={{ mb: 1 }}>
+      {items.map((item, index) => (
+        <Accordion key={item.id || index} sx={{ mb: 1 }}>
           <AccordionSummary
             expandIcon={<ExpandMoreIcon />}
-            aria-controls={`query-${index}-content`}
-            id={`query-${index}-header`}
+            aria-controls={`item-${index}-content`}
+            id={`item-${index}-header`}
             sx={{ 
               backgroundColor: '#f5f5f5',
               '&:hover': {
@@ -139,14 +145,14 @@ export function QueryList({ queries, initialUserDescriptions, onUserDescriptions
           >
             <Box sx={{ width: '100%' }}>
               <Typography sx={{ fontWeight: 'bold' }}>
-                {query.Name || query.UniqueName}
+                {item.Name || item.UniqueName}
               </Typography>
-              {query.Description && (
+              {item.Description && (
                 <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                  {query.Description}
+                  {item.Description}
                 </Typography>
               )}
-              {userDescriptions.queries[query.id] && (
+              {descriptions.items[item.id] && (
                 <Typography 
                   variant="body2" 
                   sx={{ 
@@ -155,21 +161,21 @@ export function QueryList({ queries, initialUserDescriptions, onUserDescriptions
                     color: 'primary.main'
                   }}
                 >
-                  📝 {userDescriptions.queries[query.id]}
+                  📝 {descriptions.items[item.id]}
                 </Typography>
               )}
             </Box>
           </AccordionSummary>
           <AccordionDetails>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              {/* User Description for Query */}
+              {/* User Description for Item */}
               <TextField
                 label="Add Your Notes"
-                placeholder="Add your own description or notes about this query..."
+                placeholder="Add your own description or notes..."
                 multiline
                 rows={2}
-                value={userDescriptions.queries[query.id] || ''}
-                onChange={(e) => handleQueryDescriptionChange(query.id, e.target.value)}
+                value={descriptions.items[item.id] || ''}
+                onChange={(e) => handleItemDescriptionChange(item.id, e.target.value)}
                 variant="outlined"
                 size="small"
                 fullWidth
@@ -177,10 +183,10 @@ export function QueryList({ queries, initialUserDescriptions, onUserDescriptions
               />
 
               {/* Parameters */}
-              {query.Parameters && query.Parameters.length > 0 ? (
+              {item.Parameters && item.Parameters.length > 0 ? (
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                  {query.Parameters.map((param, paramIndex) => {
-                    const paramKey = `${query.id}-${paramIndex}`;
+                  {item.Parameters.map((param, paramIndex) => {
+                    const paramKey = `${item.id}-${paramIndex}`;
                     return (
                       <Box 
                         key={paramIndex}
@@ -214,8 +220,8 @@ export function QueryList({ queries, initialUserDescriptions, onUserDescriptions
                           placeholder="Add your own notes about this parameter..."
                           multiline
                           rows={1}
-                          value={userDescriptions.parameters[paramKey] || ''}
-                          onChange={(e) => handleParameterDescriptionChange(query.id, paramIndex, e.target.value)}
+                          value={descriptions.parameters[paramKey] || ''}
+                          onChange={(e) => handleParameterDescriptionChange(item.id, paramIndex, e.target.value)}
                           variant="outlined"
                           size="small"
                           fullWidth
