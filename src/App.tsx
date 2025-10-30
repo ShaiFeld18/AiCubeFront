@@ -140,6 +140,24 @@ function App() {
     }
   };
 
+  const handleToolDelete = (toolId: string) => {
+    // Find the tool to get its display name
+    const toolToDelete = selectedTools.find(t => t.id === toolId);
+    if (toolToDelete) {
+      const toolDisplayName = toolToDelete.Name || toolToDelete.UniqueName;
+      
+      // Remove tool from selectedTools
+      setSelectedTools(prev => prev.filter(t => t.id !== toolId));
+      
+      // Remove tool descriptions
+      setToolDescriptions(prev => {
+        const newDescriptions = { ...prev };
+        delete newDescriptions[toolDisplayName];
+        return newDescriptions;
+      });
+    }
+  };
+
   const handlePromptChange = (content: string) => {
     setPromptContent(content);
   };
@@ -283,6 +301,7 @@ function App() {
                   toolDescriptions={toolDescriptions}
                   onToolSelected={handleToolSelected}
                   onToolDescriptionsChange={handleToolDescriptionsChange}
+                  onToolDelete={handleToolDelete}
                 />
               </Box>
             </Slide>

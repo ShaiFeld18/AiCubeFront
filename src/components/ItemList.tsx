@@ -4,15 +4,18 @@ import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import Typography from '@mui/material/Typography';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import DeleteIcon from '@mui/icons-material/Delete';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import TextField from '@mui/material/TextField';
+import IconButton from '@mui/material/IconButton';
 import { FlowCube, UserDescriptions } from '../flow/types';
 
 interface ItemListProps {
   items: FlowCube[];
   initialDescriptions?: UserDescriptions;
   onDescriptionsChange?: (descriptions: UserDescriptions) => void;
+  onDelete?: (itemId: string) => void;
   emptyMessage?: string;
   highlightItemId?: string; // ID of item to scroll to and expand
 }
@@ -26,6 +29,7 @@ export function ItemList({
   items, 
   initialDescriptions, 
   onDescriptionsChange,
+  onDelete,
   emptyMessage = 'No items available',
   highlightItemId
 }: ItemListProps) {
@@ -192,26 +196,47 @@ export function ItemList({
               transition: 'background-color 0.3s ease'
             }}
           >
-            <Box sx={{ width: '100%' }}>
-              <Typography sx={{ fontWeight: 'bold' }}>
-                {item.Name || item.UniqueName}
-              </Typography>
-              {item.Description && (
-                <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                  {item.Description}
+            <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: 1 }}>
+              <Box sx={{ flexGrow: 1 }}>
+                <Typography sx={{ fontWeight: 'bold' }}>
+                  {item.Name || item.UniqueName}
                 </Typography>
-              )}
-              {descriptions.items[item.id] && (
-                <Typography 
-                  variant="body2" 
+                {item.Description && (
+                  <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                    {item.Description}
+                  </Typography>
+                )}
+                {descriptions.items[item.id] && (
+                  <Typography 
+                    variant="body2" 
+                    sx={{ 
+                      mt: 0.5, 
+                      fontStyle: 'italic',
+                      color: 'primary.main'
+                    }}
+                  >
+                    📝 {descriptions.items[item.id]}
+                  </Typography>
+                )}
+              </Box>
+              {onDelete && (
+                <IconButton
+                  aria-label="delete"
+                  size="small"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete(item.id);
+                  }}
                   sx={{ 
-                    mt: 0.5, 
-                    fontStyle: 'italic',
-                    color: 'primary.main'
+                    color: 'error.main',
+                    '&:hover': {
+                      backgroundColor: 'error.light',
+                      color: 'error.dark',
+                    }
                   }}
                 >
-                  📝 {descriptions.items[item.id]}
-                </Typography>
+                  <DeleteIcon fontSize="small" />
+                </IconButton>
               )}
             </Box>
           </AccordionSummary>
