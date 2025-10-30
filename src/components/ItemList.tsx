@@ -14,6 +14,7 @@ interface ItemListProps {
   initialDescriptions?: UserDescriptions;
   onDescriptionsChange?: (descriptions: UserDescriptions) => void;
   emptyMessage?: string;
+  highlightItemId?: string; // ID of item to scroll to and expand
 }
 
 interface InternalDescriptions {
@@ -25,15 +26,18 @@ export function ItemList({
   items, 
   initialDescriptions, 
   onDescriptionsChange,
-  emptyMessage = 'No items available'
+  emptyMessage = 'No items available',
+  highlightItemId
 }: ItemListProps) {
   const [descriptions, setDescriptions] = useState<InternalDescriptions>({
     items: {},
     parameters: {}
   });
+  const [expandedAccordion, setExpandedAccordion] = useState<string | false>(false);
   
   const previousExternalRef = useRef<string>('');
   const isInitialLoadRef = useRef(true);
+  const accordionRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
 
   // Load initial descriptions
   useEffect(() => {
@@ -120,6 +124,35 @@ export function ItemList({
     }));
   };
 
+  const handleAccordionChange = (itemId: string) => (_event: React.SyntheticEvent, isExpanded: boolean) => {
+    setExpandedAccordion(isExpanded ? itemId : false);
+  };
+
+  // Handle highlighting and scrolling to a specific item
+  useEffect(() => {
+    if (highlightItemId && items.some(item => item.id === highlightItemId)) {
+      // Expand the accordion
+      setExpandedAccordion(highlightItemId);
+      
+      // Scroll to the item after a short delay to ensure accordion is expanded
+      setTimeout(() => {
+        const element = accordionRefs.current[highlightItemId];
+        if (element) {
+          element.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'center'
+          });
+          
+          // Add a highlight effect
+          element.style.backgroundColor = '#fff3cd';
+          setTimeout(() => {
+            element.style.backgroundColor = '';
+          }, 2000);
+        }
+      }, 100);
+    }
+  }, [highlightItemId, items]);
+
   if (!items || items.length === 0) {
     return (
       <Box sx={{ 
@@ -138,7 +171,15 @@ export function ItemList({
   return (
     <Box>
       {items.map((item, index) => (
-        <Accordion key={item.id || index} sx={{ mb: 1 }}>
+        <Accordion 
+          key={item.id || index} 
+          sx={{ mb: 1 }}
+          expanded={expandedAccordion === item.id}
+          onChange={handleAccordionChange(item.id)}
+          ref={(el) => {
+            accordionRefs.current[item.id] = el;
+          }}
+        >
           <AccordionSummary
             expandIcon={<ExpandMoreIcon />}
             aria-controls={`item-${index}-content`}
@@ -147,7 +188,8 @@ export function ItemList({
               backgroundColor: '#f5f5f5',
               '&:hover': {
                 backgroundColor: '#eeeeee',
-              }
+              },
+              transition: 'background-color 0.3s ease'
             }}
           >
             <Box sx={{ width: '100%' }}>

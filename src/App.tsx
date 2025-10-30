@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { useFlow, LoadDataParams, FlowResponseBuilder, UserDescriptions, ToolDescriptions, FlowCube } from './flow';
+import { PromptPage } from './pages/PromptPage';
 import { ToolsPage } from './pages/ToolsPage';
 import { ConnectedQueriesPage } from './pages/ConnectedQueriesPage';
+import { PlanPage } from './pages/PlanPage';
 import { API_CONFIG } from './config';
 import AppBar from '@mui/material/AppBar';
 import Tabs from '@mui/material/Tabs';
@@ -15,6 +17,9 @@ function App() {
   const [connectedQueriesDescriptions, setConnectedQueriesDescriptions] = useState<UserDescriptions>({});
   const [selectedTools, setSelectedTools] = useState<FlowCube[]>([]);
   const [toolDescriptions, setToolDescriptions] = useState<ToolDescriptions>({});
+  const [promptContent, setPromptContent] = useState<string>('');
+  const [plan, setPlan] = useState<string>('');
+  const [planLoading, setPlanLoading] = useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState(0);
   const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('left');
 
@@ -26,6 +31,16 @@ function App() {
       // Load connected queries descriptions if they exist in the received data
       if (data.value.connectedQueriesDescriptions) {
         setConnectedQueriesDescriptions(data.value.connectedQueriesDescriptions);
+      }
+      
+      // Load prompt if it exists
+      if (data.value.prompt) {
+        setPromptContent(data.value.prompt);
+      }
+      
+      // Load plan if it exists
+      if (data.value.plan) {
+        setPlan(data.value.plan);
       }
       
       // Load tool descriptions and reconstruct selected tools
@@ -79,9 +94,17 @@ function App() {
       // Add tool descriptions to the response (selectedTools can be inferred from toolDescriptions keys)
       response.toolDescriptions = toolDescriptions;
       
+      // Add prompt content to the response
+      response.prompt = promptContent;
+      
+      // Add plan to the response
+      response.plan = plan;
+      
       console.log('Sending response:', response);
       console.log('Connected queries descriptions:', connectedQueriesDescriptions);
       console.log('Tool descriptions:', toolDescriptions);
+      console.log('Prompt content:', promptContent);
+      console.log('Plan:', plan);
       
       return response;
     },
@@ -117,8 +140,39 @@ function App() {
     }
   };
 
+  const handlePromptChange = (content: string) => {
+    setPromptContent(content);
+  };
+
+  const handleGeneratePlan = async () => {
+    setPlanLoading(true);
+    try {
+      const response = await fetch(API_CONFIG.GENERATE_PLAN_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          queries: receivedData?.linkedQueries || [],
+          tools: selectedTools,
+          prompt: promptContent
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to generate plan');
+      }
+      
+      const data = await response.json();
+      setPlan(data.plan);
+    } catch (error) {
+      console.error('Failed to generate plan:', error);
+      throw error;
+    } finally {
+      setPlanLoading(false);
+    }
+  };
+
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
-    // Set slide direction: Tools (0) is on left, Queries (1) is on right
+    // Set slide direction based on navigation
     setSlideDirection(newValue > currentPage ? 'left' : 'right');
     setCurrentPage(newValue);
   };
@@ -139,16 +193,18 @@ function App() {
             }
           }}
         >
-          <Tab label="Tools" />
+          <Tab label="Plan" />
+          <Tab label="Prompt" />
           <Tab label="Connected Queries" />
+          <Tab label="Tools" />
         </Tabs>
       </AppBar>
 
       {/* Page Content */}
-      <Container maxWidth="md" sx={{ flexGrow: 1, pt: 2 }}>
+      <Container maxWidth="lg" sx={{ flexGrow: 1, pt: 2 }}>
         {receivedData ? (
           <Box sx={{ position: 'relative', width: '100%' }}>
-            {/* Tools Page */}
+            {/* Plan Page */}
             <Slide
               direction={slideDirection === 'right' ? 'right' : 'left'}
               in={currentPage === 0}
@@ -167,16 +223,15 @@ function App() {
                   left: 0
                 }}
               >
-                <ToolsPage
-                  selectedTools={selectedTools}
-                  toolDescriptions={toolDescriptions}
-                  onToolSelected={handleToolSelected}
-                  onToolDescriptionsChange={handleToolDescriptionsChange}
+                <PlanPage
+                  plan={plan}
+                  loading={planLoading}
+                  onGeneratePlan={handleGeneratePlan}
                 />
               </Box>
             </Slide>
 
-            {/* Connected Queries Page */}
+            {/* Prompt Page */}
             <Slide
               direction={slideDirection === 'left' ? 'left' : 'right'}
               in={currentPage === 1}
@@ -195,10 +250,66 @@ function App() {
                   left: 0
                 }}
               >
+                <PromptPage
+                  tools={selectedTools}
+                  queries={receivedData.linkedQueries}
+                  promptContent={promptContent}
+                  onPromptChange={handlePromptChange}
+                />
+              </Box>
+            </Slide>
+
+            {/* Connected Queries Page */}
+            <Slide
+              direction={slideDirection === 'left' ? 'left' : 'right'}
+              in={currentPage === 2}
+              mountOnEnter
+              unmountOnExit
+              timeout={300}
+            >
+              <Box
+                role="tabpanel"
+                id="tabpanel-2"
+                aria-labelledby="tab-2"
+                sx={{ 
+                  position: currentPage === 2 ? 'relative' : 'absolute',
+                  width: '100%',
+                  top: 0,
+                  left: 0
+                }}
+              >
                 <ConnectedQueriesPage
                   linkedQueries={receivedData.linkedQueries}
                   connectedQueriesDescriptions={connectedQueriesDescriptions}
                   onConnectedQueriesDescriptionsChange={handleConnectedQueriesDescriptionsChange}
+                />
+              </Box>
+            </Slide>
+
+            {/* Tools Page */}
+            <Slide
+              direction={slideDirection === 'left' ? 'left' : 'right'}
+              in={currentPage === 3}
+              mountOnEnter
+              unmountOnExit
+              timeout={300}
+            >
+              <Box
+                role="tabpanel"
+                id="tabpanel-3"
+                aria-labelledby="tab-3"
+                sx={{ 
+                  position: currentPage === 3 ? 'relative' : 'absolute',
+                  width: '100%',
+                  top: 0,
+                  left: 0
+                }}
+              >
+                <ToolsPage
+                  selectedTools={selectedTools}
+                  toolDescriptions={toolDescriptions}
+                  onToolSelected={handleToolSelected}
+                  onToolDescriptionsChange={handleToolDescriptionsChange}
                 />
               </Box>
             </Slide>

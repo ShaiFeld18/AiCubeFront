@@ -9,6 +9,7 @@ interface ToolsPageProps {
   toolDescriptions: ToolDescriptions;
   onToolSelected: (tool: FlowCube) => void;
   onToolDescriptionsChange: (descriptions: ToolDescriptions) => void;
+  highlightItemId?: string;
 }
 
 export function ToolsPage({
@@ -16,6 +17,7 @@ export function ToolsPage({
   toolDescriptions,
   onToolSelected,
   onToolDescriptionsChange,
+  highlightItemId,
 }: ToolsPageProps) {
   const selectedToolNames = selectedTools.map(t => t.Name || t.UniqueName);
 
@@ -33,6 +35,7 @@ export function ToolsPage({
         initialDescriptions={toolDescriptions}
         onDescriptionsChange={onToolDescriptionsChange}
         emptyMessage="No tools selected. Choose a tool from the dropdown above."
+        highlightItemId={highlightItemId}
       />
     </Box>
   );

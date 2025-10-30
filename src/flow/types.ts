@@ -74,6 +74,21 @@ export type UserDescriptions = {
 
 export type ToolDescriptions = UserDescriptions; // Same structure as UserDescriptions
 
+export type ReferenceType = 'tool' | 'query' | 'parameter';
+
+export type Reference = {
+  id: string; // unique reference id
+  type: ReferenceType;
+  itemId: string; // id of the tool or query
+  itemName: string; // display name of the tool or query
+  parameterId?: string; // for parameter references
+  parameterName?: string; // display name of the parameter
+};
+
+export type PromptData = {
+  content: string; // HTML content from Quill editor with text markers like [[tool:name]]
+};
+
 export type FlowResponse = {
   Parameters: Partial<IFlowParameter>[];
   Fields: IField[];
@@ -81,6 +96,8 @@ export type FlowResponse = {
   iframeFieldsToFilter: { [key: string]: string };
   connectedQueriesDescriptions?: UserDescriptions;
   toolDescriptions?: ToolDescriptions;
+  prompt?: string;
+  plan?: string;
 };
 
 export type FlowCube = {

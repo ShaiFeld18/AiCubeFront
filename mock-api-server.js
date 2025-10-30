@@ -229,6 +229,70 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+  // POST /api/generate-plan - Generate AI agent plan
+  if (pathname === '/api/generate-plan' && req.method === 'POST') {
+    let body = '';
+    req.on('data', chunk => {
+      body += chunk.toString();
+    });
+    req.on('end', () => {
+      try {
+        const { queries = [], tools = [], prompt = '' } = JSON.parse(body);
+        
+        // Generate mock markdown plan
+        const toolsList = tools.length > 0
+          ? tools.map(t => `- **${t.Name}**: ${t.Description || 'No description'}`).join('\n')
+          : '- No tools selected';
+        
+        const queriesList = queries.length > 0
+          ? queries.map(q => `- **${q.Name}**: ${q.Description || 'No description'}`).join('\n')
+          : '- No connected queries';
+        
+        const mockPlan = `# AI Agent Plan
+
+## Overview
+This is a generated plan for executing the AI agent workflow based on your configuration.
+
+## Selected Tools
+${toolsList}
+
+## Connected Queries
+${queriesList}
+
+## Prompt
+\`\`\`
+${prompt || 'No prompt provided'}
+\`\`\`
+
+## Execution Steps
+1. **Initialize**: Set up the agent with selected tools and query connections
+2. **Context Gathering**: Process connected queries to gather necessary context
+3. **Tool Configuration**: Configure each tool with appropriate parameters
+4. **Prompt Execution**: Execute the prompt with available data and tools
+5. **Result Processing**: Collect and format results from all operations
+
+## Expected Output
+The agent will process the prompt using the configured tools and queries, returning structured results based on:
+- Tool capabilities and configurations
+- Query results and context
+- Prompt requirements and specifications
+
+## Notes
+- Ensure all tools have required parameters configured
+- Verify query connections are active
+- Review prompt for clarity and completeness
+`;
+
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ plan: mockPlan }));
+      } catch (error) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Invalid request body' }));
+      }
+    });
+    return;
+  }
+
   // 404 for other routes
   res.writeHead(404, { 'Content-Type': 'application/json' });
   res.end(JSON.stringify({ error: 'Not found' }));
@@ -237,8 +301,9 @@ const server = http.createServer((req, res) => {
 server.listen(PORT, () => {
   console.log(`Mock API server running at http://localhost:${PORT}/`);
   console.log(`\nAvailable endpoints:`);
-  console.log(`  GET http://localhost:${PORT}/api/tools`);
-  console.log(`  GET http://localhost:${PORT}/api/tools/{toolName}`);
+  console.log(`  GET  http://localhost:${PORT}/api/tools`);
+  console.log(`  GET  http://localhost:${PORT}/api/tools/{toolName}`);
+  console.log(`  POST http://localhost:${PORT}/api/generate-plan`);
   console.log(`\nAvailable tools: ${tools.join(', ')}`);
 });
 

@@ -7,12 +7,14 @@ interface ConnectedQueriesPageProps {
   linkedQueries: FlowCube[];
   connectedQueriesDescriptions: UserDescriptions;
   onConnectedQueriesDescriptionsChange: (descriptions: UserDescriptions) => void;
+  highlightItemId?: string;
 }
 
 export function ConnectedQueriesPage({
   linkedQueries,
   connectedQueriesDescriptions,
   onConnectedQueriesDescriptionsChange,
+  highlightItemId,
 }: ConnectedQueriesPageProps) {
   return (
     <Box sx={{ py: 3 }}>
@@ -24,6 +26,7 @@ export function ConnectedQueriesPage({
         initialDescriptions={connectedQueriesDescriptions}
         onDescriptionsChange={onConnectedQueriesDescriptionsChange}
         emptyMessage="No connected queries available"
+        highlightItemId={highlightItemId}
       />
     </Box>
   );
