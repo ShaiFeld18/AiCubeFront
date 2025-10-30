@@ -12,6 +12,56 @@ import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Slide from '@mui/material/Slide';
 
+// Helper function to clean up descriptions by removing entries that don't match actual items
+function cleanupDescriptions(
+  descriptions: UserDescriptions,
+  items: FlowCube[]
+): UserDescriptions {
+  // Create a map of item display names to items for quick lookup
+  const itemMap = new Map<string, FlowCube>();
+  items.forEach(item => {
+    const displayName = item.Name || item.UniqueName;
+    itemMap.set(displayName, item);
+  });
+
+  const cleanedDescriptions: UserDescriptions = {};
+
+  // Iterate through descriptions and validate
+  Object.entries(descriptions).forEach(([itemDisplayName, descData]) => {
+    const item = itemMap.get(itemDisplayName);
+    
+    // If item doesn't exist, skip this description entry
+    if (!item) {
+      return;
+    }
+
+    // Validate parameter descriptions
+    const cleanedParameters: { [key: string]: string } = {};
+    
+    if (descData.parameters && item.Parameters) {
+      // Get actual parameter display names from the item
+      const actualParamNames = new Set(
+        item.Parameters.map(param => param.DisplayName || param.Name).filter(Boolean)
+      );
+
+      // Only include parameter descriptions that match actual parameters
+      Object.entries(descData.parameters).forEach(([paramName, paramDesc]) => {
+        if (actualParamNames.has(paramName)) {
+          cleanedParameters[paramName] = paramDesc;
+        }
+      });
+    }
+
+    // Include the cleaned entry
+    cleanedDescriptions[itemDisplayName] = {
+      queryDescription: descData.queryDescription,
+      parameters: cleanedParameters
+    };
+  });
+
+  return cleanedDescriptions;
+}
+
 function App() {
   const [receivedData, setReceivedData] = useState<LoadDataParams | null>(null);
   const [connectedQueriesDescriptions, setConnectedQueriesDescriptions] = useState<UserDescriptions>({});
@@ -30,7 +80,12 @@ function App() {
       
       // Load connected queries descriptions if they exist in the received data
       if (data.value.connectedQueriesDescriptions) {
-        setConnectedQueriesDescriptions(data.value.connectedQueriesDescriptions);
+        // Clean up descriptions to remove entries that don't match actual queries
+        const cleanedDescriptions = cleanupDescriptions(
+          data.value.connectedQueriesDescriptions,
+          data.linkedQueries
+        );
+        setConnectedQueriesDescriptions(cleanedDescriptions);
       }
       
       // Load prompt if it exists
