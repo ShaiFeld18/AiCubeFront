@@ -9,14 +9,14 @@ import { ReferenceMenu } from '../components/ReferenceMenu';
 import { FlowCube, Reference } from '../flow/types';
 
 interface PromptPageProps {
-  tools: FlowCube[];
+  toolCubes: FlowCube[];
   queries: FlowCube[];
   promptContent: string;
   onPromptChange: (content: string) => void;
 }
 
 export function PromptPage({
-  tools,
+  toolCubes,
   queries,
   promptContent,
   onPromptChange,
@@ -40,11 +40,11 @@ export function PromptPage({
     'direction'
   ];
 
-  // Generate plain text marker for reference: [[tool/query:name:parameter]]
+  // Generate plain text marker for reference: [[toolCube/connectedCube:name:parameter]]
   const createReferenceMarker = (reference: Reference): string => {
     const typePrefix = reference.type === 'parameter' 
-      ? (reference.itemId.startsWith('tool-') ? 'tool' : 'query')
-      : reference.type;
+      ? (reference.itemId.startsWith('tool-') ? 'toolCube' : 'connectedCube')
+      : reference.type === 'tool' ? 'toolCube' : 'connectedCube';
     
     return reference.parameterName
       ? `[[${typePrefix}:${reference.itemName}:${reference.parameterName}]]`
@@ -67,7 +67,7 @@ export function PromptPage({
         return;
       }
 
-      // Create plain text marker in format: [[tool/query:name:parameter]]
+      // Create plain text marker in format: [[toolCube/connectedCube:name:parameter]]
       const marker = createReferenceMarker(draggedRef);
       
       // Insert marker text
@@ -120,7 +120,7 @@ export function PromptPage({
             }}
           >
             <ReferenceMenu
-              tools={tools}
+              toolCubes={toolCubes}
               queries={queries}
               onDragStart={handleDragStart}
             />
@@ -135,7 +135,7 @@ export function PromptPage({
           >
             <Box sx={{ p: 2 }}>
               <Typography variant="body2" color="text.secondary" gutterBottom>
-                Drag references from the left menu to insert them as [[tool:name]] or [[query:name:parameter]] format.
+                Drag references from the left menu to insert them as [[toolCube:name]] or [[connectedCube:name:parameter]] format.
               </Typography>
             </Box>
             <Box sx={{ 

@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { useFlow, LoadDataParams, FlowResponseBuilder, UserDescriptions, ToolDescriptions, FlowCube } from './flow';
+import { useFlow, LoadDataParams, FlowResponseBuilder, UserDescriptions, ToolCubeDescriptions, FlowCube } from './flow';
 import { PromptPage } from './pages/PromptPage';
-import { ToolsPage } from './pages/ToolsPage';
-import { ConnectedQueriesPage } from './pages/ConnectedQueriesPage';
+import { ToolCubesPage } from './pages/ToolCubesPage';
+import { ConnectedCubesPage } from './pages/ConnectedCubesPage';
 import { PlanPage } from './pages/PlanPage';
 import { API_CONFIG } from './config';
 import AppBar from '@mui/material/AppBar';
@@ -64,9 +64,9 @@ function cleanupDescriptions(
 
 function App() {
   const [receivedData, setReceivedData] = useState<LoadDataParams | null>(null);
-  const [connectedQueriesDescriptions, setConnectedQueriesDescriptions] = useState<UserDescriptions>({});
-  const [selectedTools, setSelectedTools] = useState<FlowCube[]>([]);
-  const [toolDescriptions, setToolDescriptions] = useState<ToolDescriptions>({});
+  const [connectedCubesDescriptions, setConnectedCubesDescriptions] = useState<UserDescriptions>({});
+  const [selectedToolCubes, setSelectedToolCubes] = useState<FlowCube[]>([]);
+  const [toolCubeDescriptions, setToolCubeDescriptions] = useState<ToolCubeDescriptions>({});
   const [promptContent, setPromptContent] = useState<string>('');
   const [plan, setPlan] = useState<string>('');
   const [planLoading, setPlanLoading] = useState<boolean>(false);
@@ -78,14 +78,14 @@ function App() {
       console.log('Received data from Flow:', data);
       setReceivedData(data);
       
-      // Load connected queries descriptions if they exist in the received data
-      if (data.value.connectedQueriesDescriptions) {
+      // Load connected cubes descriptions if they exist in the received data
+      if (data.value.connectedCubesDescriptions) {
         // Clean up descriptions to remove entries that don't match actual queries
         const cleanedDescriptions = cleanupDescriptions(
-          data.value.connectedQueriesDescriptions,
+          data.value.connectedCubesDescriptions,
           data.linkedQueries
         );
-        setConnectedQueriesDescriptions(cleanedDescriptions);
+        setConnectedCubesDescriptions(cleanedDescriptions);
       }
       
       // Load prompt if it exists
@@ -98,27 +98,27 @@ function App() {
         setPlan(data.value.plan);
       }
       
-      // Load tool descriptions and reconstruct selected tools
-      if (data.value.toolDescriptions) {
-        setToolDescriptions(data.value.toolDescriptions);
+      // Load tool cube descriptions and reconstruct selected tool cubes
+      if (data.value.toolCubeDescriptions) {
+        setToolCubeDescriptions(data.value.toolCubeDescriptions);
         
-        // Fetch tool metadata for each tool in toolDescriptions
-        const toolNames = Object.keys(data.value.toolDescriptions);
-        const toolPromises = toolNames.map(async (toolName) => {
+        // Fetch tool cube metadata for each tool cube in toolCubeDescriptions
+        const toolCubeNames = Object.keys(data.value.toolCubeDescriptions);
+        const toolCubePromises = toolCubeNames.map(async (toolCubeName) => {
           try {
-            const response = await fetch(API_CONFIG.TOOL_METADATA_URL(toolName));
+            const response = await fetch(API_CONFIG.TOOL_METADATA_URL(toolCubeName));
             if (response.ok) {
               return await response.json();
             }
           } catch (error) {
-            console.error(`Failed to load tool metadata for ${toolName}:`, error);
+            console.error(`Failed to load tool cube metadata for ${toolCubeName}:`, error);
           }
           return null;
         });
         
-        const tools = await Promise.all(toolPromises);
-        const validTools = tools.filter((tool): tool is FlowCube => tool !== null);
-        setSelectedTools(validTools);
+        const toolCubes = await Promise.all(toolCubePromises);
+        const validToolCubes = toolCubes.filter((toolCube): toolCube is FlowCube => toolCube !== null);
+        setSelectedToolCubes(validToolCubes);
       }
     },
     onSave: () => {
@@ -143,11 +143,11 @@ function App() {
       
       const response = builder.build();
       
-      // Add connected queries descriptions to the response
-      response.connectedQueriesDescriptions = connectedQueriesDescriptions;
+      // Add connected cubes descriptions to the response
+      response.connectedCubesDescriptions = connectedCubesDescriptions;
       
-      // Add tool descriptions to the response (selectedTools can be inferred from toolDescriptions keys)
-      response.toolDescriptions = toolDescriptions;
+      // Add tool cube descriptions to the response (selectedToolCubes can be inferred from toolCubeDescriptions keys)
+      response.toolCubeDescriptions = toolCubeDescriptions;
       
       // Add prompt content to the response
       response.prompt = promptContent;
@@ -156,8 +156,8 @@ function App() {
       response.plan = plan;
       
       console.log('Sending response:', response);
-      console.log('Connected queries descriptions:', connectedQueriesDescriptions);
-      console.log('Tool descriptions:', toolDescriptions);
+      console.log('Connected cubes descriptions:', connectedCubesDescriptions);
+      console.log('Tool cube descriptions:', toolCubeDescriptions);
       console.log('Prompt content:', promptContent);
       console.log('Plan:', plan);
       
@@ -168,8 +168,8 @@ function App() {
     },
   });
 
-  const handleConnectedQueriesDescriptionsChange = (descriptions: UserDescriptions) => {
-    setConnectedQueriesDescriptions(prev => {
+  const handleConnectedCubesDescriptionsChange = (descriptions: UserDescriptions) => {
+    setConnectedCubesDescriptions(prev => {
       // Only update if there are actual changes
       if (JSON.stringify(prev) !== JSON.stringify(descriptions)) {
         return descriptions;
@@ -178,8 +178,8 @@ function App() {
     });
   };
 
-  const handleToolDescriptionsChange = (descriptions: ToolDescriptions) => {
-    setToolDescriptions(prev => {
+  const handleToolCubeDescriptionsChange = (descriptions: ToolCubeDescriptions) => {
+    setToolCubeDescriptions(prev => {
       // Only update if there are actual changes
       if (JSON.stringify(prev) !== JSON.stringify(descriptions)) {
         return descriptions;
@@ -188,26 +188,26 @@ function App() {
     });
   };
 
-  const handleToolSelected = (tool: FlowCube) => {
-    // Check if tool is already added
-    if (!selectedTools.find(t => t.id === tool.id)) {
-      setSelectedTools(prev => [...prev, tool]);
+  const handleToolCubeSelected = (toolCube: FlowCube) => {
+    // Check if tool cube is already added
+    if (!selectedToolCubes.find(t => t.id === toolCube.id)) {
+      setSelectedToolCubes(prev => [...prev, toolCube]);
     }
   };
 
-  const handleToolDelete = (toolId: string) => {
-    // Find the tool to get its display name
-    const toolToDelete = selectedTools.find(t => t.id === toolId);
-    if (toolToDelete) {
-      const toolDisplayName = toolToDelete.Name || toolToDelete.UniqueName;
+  const handleToolCubeDelete = (toolCubeId: string) => {
+    // Find the tool cube to get its display name
+    const toolCubeToDelete = selectedToolCubes.find(t => t.id === toolCubeId);
+    if (toolCubeToDelete) {
+      const toolCubeDisplayName = toolCubeToDelete.Name || toolCubeToDelete.UniqueName;
       
-      // Remove tool from selectedTools
-      setSelectedTools(prev => prev.filter(t => t.id !== toolId));
+      // Remove tool cube from selectedToolCubes
+      setSelectedToolCubes(prev => prev.filter(t => t.id !== toolCubeId));
       
-      // Remove tool descriptions
-      setToolDescriptions(prev => {
+      // Remove tool cube descriptions
+      setToolCubeDescriptions(prev => {
         const newDescriptions = { ...prev };
-        delete newDescriptions[toolDisplayName];
+        delete newDescriptions[toolCubeDisplayName];
         return newDescriptions;
       });
     }
@@ -225,7 +225,7 @@ function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           queries: receivedData?.linkedQueries || [],
-          tools: selectedTools,
+          tools: selectedToolCubes,
           prompt: promptContent
         })
       });
@@ -268,8 +268,8 @@ function App() {
         >
           <Tab label="Plan" />
           <Tab label="Prompt" />
-          <Tab label="Tools" />
-          <Tab label="Queries" />
+          <Tab label="Tool Cubes" />
+          <Tab label="Cubes" />
         </Tabs>
       </AppBar>
 
@@ -324,7 +324,7 @@ function App() {
                 }}
               >
                 <PromptPage
-                  tools={selectedTools}
+                  toolCubes={selectedToolCubes}
                   queries={receivedData.linkedQueries}
                   promptContent={promptContent}
                   onPromptChange={handlePromptChange}
@@ -332,7 +332,7 @@ function App() {
               </Box>
             </Slide>
 
-            {/* Tools Page */}
+            {/* Tool Cubes Page */}
             <Slide
               direction={slideDirection === 'left' ? 'left' : 'right'}
               in={currentPage === 2}
@@ -351,17 +351,17 @@ function App() {
                   left: 0
                 }}
               >
-                <ToolsPage
-                  selectedTools={selectedTools}
-                  toolDescriptions={toolDescriptions}
-                  onToolSelected={handleToolSelected}
-                  onToolDescriptionsChange={handleToolDescriptionsChange}
-                  onToolDelete={handleToolDelete}
+                <ToolCubesPage
+                  selectedToolCubes={selectedToolCubes}
+                  toolCubeDescriptions={toolCubeDescriptions}
+                  onToolCubeSelected={handleToolCubeSelected}
+                  onToolCubeDescriptionsChange={handleToolCubeDescriptionsChange}
+                  onToolCubeDelete={handleToolCubeDelete}
                 />
               </Box>
             </Slide>
 
-            {/* Queries Page */}
+            {/* Cubes Page */}
             <Slide
               direction={slideDirection === 'left' ? 'left' : 'right'}
               in={currentPage === 3}
@@ -380,10 +380,10 @@ function App() {
                   left: 0
                 }}
               >
-                <ConnectedQueriesPage
+                <ConnectedCubesPage
                   linkedQueries={receivedData.linkedQueries}
-                  connectedQueriesDescriptions={connectedQueriesDescriptions}
-                  onConnectedQueriesDescriptionsChange={handleConnectedQueriesDescriptionsChange}
+                  connectedCubesDescriptions={connectedCubesDescriptions}
+                  onConnectedCubesDescriptionsChange={handleConnectedCubesDescriptionsChange}
                 />
               </Box>
             </Slide>

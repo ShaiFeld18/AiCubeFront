@@ -72,7 +72,7 @@ export type UserDescriptions = {
   };
 };
 
-export type ToolDescriptions = UserDescriptions; // Same structure as UserDescriptions
+export type ToolCubeDescriptions = UserDescriptions; // Same structure as UserDescriptions
 
 export type ReferenceType = 'tool' | 'query' | 'parameter';
 
@@ -86,7 +86,7 @@ export type Reference = {
 };
 
 export type PromptData = {
-  content: string; // HTML content from Quill editor with text markers like [[tool:name]]
+  content: string; // HTML content from Quill editor with text markers like [[toolCube:name]] or [[connectedCube:name]]
 };
 
 export type FlowResponse = {
@@ -94,8 +94,8 @@ export type FlowResponse = {
   Fields: IField[];
   DisplayName: string;
   iframeFieldsToFilter: { [key: string]: string };
-  connectedQueriesDescriptions?: UserDescriptions;
-  toolDescriptions?: ToolDescriptions;
+  connectedCubesDescriptions?: UserDescriptions;
+  toolCubeDescriptions?: ToolCubeDescriptions;
   prompt?: string;
   plan?: string;
 };

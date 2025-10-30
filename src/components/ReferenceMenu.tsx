@@ -13,17 +13,17 @@ import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import { FlowCube, Reference } from '../flow/types';
 
 interface ReferenceMenuProps {
-  tools: FlowCube[];
+  toolCubes: FlowCube[];
   queries: FlowCube[];
   onDragStart: (reference: Reference) => void;
 }
 
-export function ReferenceMenu({ tools, queries, onDragStart }: ReferenceMenuProps) {
-  const [expandedTool, setExpandedTool] = useState<string | false>(false);
+export function ReferenceMenu({ toolCubes, queries, onDragStart }: ReferenceMenuProps) {
+  const [expandedToolCube, setExpandedToolCube] = useState<string | false>(false);
   const [expandedQuery, setExpandedQuery] = useState<string | false>(false);
 
-  const handleToolChange = (panel: string) => (_event: React.SyntheticEvent, isExpanded: boolean) => {
-    setExpandedTool(isExpanded ? panel : false);
+  const handleToolCubeChange = (panel: string) => (_event: React.SyntheticEvent, isExpanded: boolean) => {
+    setExpandedToolCube(isExpanded ? panel : false);
   };
 
   const handleQueryChange = (panel: string) => (_event: React.SyntheticEvent, isExpanded: boolean) => {
@@ -145,21 +145,21 @@ export function ReferenceMenu({ tools, queries, onDragStart }: ReferenceMenuProp
         Drag items to add them to your prompt
       </Typography>
 
-      {/* Tools Section */}
+      {/* Tool Cubes Section */}
       <Box sx={{ mb: 2 }}>
         <Typography variant="subtitle2" sx={{ px: 2, py: 1, bgcolor: 'primary.light', color: 'primary.contrastText' }}>
-          Tools
+          Tool Cubes
         </Typography>
-        {tools.length === 0 ? (
+        {toolCubes.length === 0 ? (
           <Typography variant="body2" color="text.secondary" sx={{ p: 2 }}>
-            No tools selected
+            No tool cubes selected
           </Typography>
         ) : (
-          tools.map((tool) => (
+          toolCubes.map((toolCube) => (
             <Accordion
-              key={tool.id}
-              expanded={expandedTool === tool.id}
-              onChange={handleToolChange(tool.id)}
+              key={toolCube.id}
+              expanded={expandedToolCube === toolCube.id}
+              onChange={handleToolCubeChange(toolCube.id)}
               sx={{ boxShadow: 'none', '&:before': { display: 'none' } }}
             >
               <AccordionSummary
@@ -169,22 +169,22 @@ export function ReferenceMenu({ tools, queries, onDragStart }: ReferenceMenuProp
                 <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
                   <DragIndicatorIcon sx={{ mr: 1, color: 'text.secondary' }} fontSize="small" />
                   <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
-                    {tool.Name || tool.UniqueName}
+                    {toolCube.Name || toolCube.UniqueName}
                   </Typography>
                 </Box>
               </AccordionSummary>
               <AccordionDetails sx={{ p: 0 }}>
                 <List dense disablePadding>
-                  {createDraggableItem(tool, 'tool')}
-                  {tool.Parameters && tool.Parameters.length > 0 && (
+                  {createDraggableItem(toolCube, 'tool')}
+                  {toolCube.Parameters && toolCube.Parameters.length > 0 && (
                     <>
                       <ListItem sx={{ pl: 2, bgcolor: 'grey.50' }}>
                         <Typography variant="caption" color="text.secondary">
                           Parameters:
                         </Typography>
                       </ListItem>
-                      {tool.Parameters.map((param, idx) => 
-                        createDraggableItem(tool, 'tool', {
+                      {toolCube.Parameters.map((param, idx) => 
+                        createDraggableItem(toolCube, 'tool', {
                           index: idx,
                           name: param.Name || '',
                           displayName: param.DisplayName || param.Name || ''
@@ -199,14 +199,14 @@ export function ReferenceMenu({ tools, queries, onDragStart }: ReferenceMenuProp
         )}
       </Box>
 
-      {/* Connected Queries Section */}
+      {/* Connected Cubes Section */}
       <Box>
         <Typography variant="subtitle2" sx={{ px: 2, py: 1, bgcolor: 'secondary.light', color: 'secondary.contrastText' }}>
-          Connected Queries
+          Connected Cubes
         </Typography>
         {queries.length === 0 ? (
           <Typography variant="body2" color="text.secondary" sx={{ p: 2 }}>
-            No connected queries
+            No connected cubes
           </Typography>
         ) : (
           queries.map((query) => (

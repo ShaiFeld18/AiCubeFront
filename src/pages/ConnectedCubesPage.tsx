@@ -3,29 +3,29 @@ import { FlowCube, UserDescriptions } from '../flow/types';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 
-interface ConnectedQueriesPageProps {
+interface ConnectedCubesPageProps {
   linkedQueries: FlowCube[];
-  connectedQueriesDescriptions: UserDescriptions;
-  onConnectedQueriesDescriptionsChange: (descriptions: UserDescriptions) => void;
+  connectedCubesDescriptions: UserDescriptions;
+  onConnectedCubesDescriptionsChange: (descriptions: UserDescriptions) => void;
   highlightItemId?: string;
 }
 
-export function ConnectedQueriesPage({
+export function ConnectedCubesPage({
   linkedQueries,
-  connectedQueriesDescriptions,
-  onConnectedQueriesDescriptionsChange,
+  connectedCubesDescriptions,
+  onConnectedCubesDescriptionsChange,
   highlightItemId,
-}: ConnectedQueriesPageProps) {
+}: ConnectedCubesPageProps) {
   return (
     <Box sx={{ py: 3 }}>
       <Typography variant="h4" component="h1" gutterBottom>
-        Connected Queries
+        Connected Cubes
       </Typography>
       <ItemList 
         items={linkedQueries}
-        initialDescriptions={connectedQueriesDescriptions}
-        onDescriptionsChange={onConnectedQueriesDescriptionsChange}
-        emptyMessage="No connected queries available"
+        initialDescriptions={connectedCubesDescriptions}
+        onDescriptionsChange={onConnectedCubesDescriptionsChange}
+        emptyMessage="No connected cubes available"
         highlightItemId={highlightItemId}
       />
     </Box>

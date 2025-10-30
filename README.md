@@ -72,21 +72,21 @@ The demo application (`src/App.tsx` & `src/main.tsx`) demonstrates the Flow ifra
 ### UI Components
 
 The project uses Material-UI (MUI) for the user interface:
-- `src/components/ItemList.tsx` - Generic accordion list component for both queries and tools with editable user notes
-- `src/components/ToolSelector.tsx` - Dropdown to select and add tools from an API
+- `src/components/ItemList.tsx` - Generic accordion list component for both cubes and tool cubes with editable user notes
+- `src/components/ToolCubeSelector.tsx` - Dropdown to select and add tool cubes from an API
 
 **Features:**
-- View query/tool names and descriptions
+- View cube/tool cube names and descriptions
 - Expand items to see their parameters
-- Add personal notes/descriptions to queries/tools and parameters
+- Add personal notes/descriptions to cubes/tool cubes and parameters
 - User notes are displayed with a 📝 icon in the header
 - User descriptions are persisted when saving and restored when reopening
-- Tool selection with API integration:
-  - Fetches available tools from API endpoint
-  - Loads tool metadata when selected
-  - Prevents duplicate tool selection
+- Tool cube selection with API integration:
+  - Fetches available tool cubes from API endpoint
+  - Loads tool cube metadata when selected
+  - Prevents duplicate tool cube selection
   - Shows loading and error states
-- Descriptions are returned in separate dictionaries for queries and tools:
+- Descriptions are returned in separate dictionaries for cubes and tool cubes:
   ```typescript
   {
     "Item Display Name": {
@@ -106,7 +106,7 @@ npm install
 
 ### Running the Demo
 
-1. **Start the mock API server** (for tools feature):
+1. **Start the mock API server** (for tool cubes feature):
 ```bash
 node mock-api-server.js
 ```

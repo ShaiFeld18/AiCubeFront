@@ -39,7 +39,7 @@ export const useFlow = ({ onLoadData, onSave, onCancel }: UseFlowProps) => {
           );
           onLoadData({
             response: flowResponseBuilder,
-            linkedQueries: data.connectedQueries,
+            linkedQueries: data.connectedCubes,
             username: data.userName,
             value: data.value,
           });
