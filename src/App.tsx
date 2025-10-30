@@ -20,7 +20,7 @@ function App() {
   const [promptContent, setPromptContent] = useState<string>('');
   const [plan, setPlan] = useState<string>('');
   const [planLoading, setPlanLoading] = useState<boolean>(false);
-  const [currentPage, setCurrentPage] = useState(0);
+  const [currentPage, setCurrentPage] = useState(3);
   const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('left');
 
   useFlow({
@@ -195,8 +195,8 @@ function App() {
         >
           <Tab label="Plan" />
           <Tab label="Prompt" />
-          <Tab label="Connected Queries" />
           <Tab label="Tools" />
+          <Tab label="Queries" />
         </Tabs>
       </AppBar>
 
@@ -259,7 +259,7 @@ function App() {
               </Box>
             </Slide>
 
-            {/* Connected Queries Page */}
+            {/* Tools Page */}
             <Slide
               direction={slideDirection === 'left' ? 'left' : 'right'}
               in={currentPage === 2}
@@ -278,15 +278,16 @@ function App() {
                   left: 0
                 }}
               >
-                <ConnectedQueriesPage
-                  linkedQueries={receivedData.linkedQueries}
-                  connectedQueriesDescriptions={connectedQueriesDescriptions}
-                  onConnectedQueriesDescriptionsChange={handleConnectedQueriesDescriptionsChange}
+                <ToolsPage
+                  selectedTools={selectedTools}
+                  toolDescriptions={toolDescriptions}
+                  onToolSelected={handleToolSelected}
+                  onToolDescriptionsChange={handleToolDescriptionsChange}
                 />
               </Box>
             </Slide>
 
-            {/* Tools Page */}
+            {/* Queries Page */}
             <Slide
               direction={slideDirection === 'left' ? 'left' : 'right'}
               in={currentPage === 3}
@@ -305,11 +306,10 @@ function App() {
                   left: 0
                 }}
               >
-                <ToolsPage
-                  selectedTools={selectedTools}
-                  toolDescriptions={toolDescriptions}
-                  onToolSelected={handleToolSelected}
-                  onToolDescriptionsChange={handleToolDescriptionsChange}
+                <ConnectedQueriesPage
+                  linkedQueries={receivedData.linkedQueries}
+                  connectedQueriesDescriptions={connectedQueriesDescriptions}
+                  onConnectedQueriesDescriptionsChange={handleConnectedQueriesDescriptionsChange}
                 />
               </Box>
             </Slide>
