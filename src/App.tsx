@@ -1,24 +1,31 @@
 import { useState } from 'react';
 import { useFlow, LoadDataParams, FlowResponseBuilder, UserDescriptions, ToolDescriptions, FlowCube } from './flow';
-import { ItemList } from './components/ItemList';
-import { ToolSelector } from './components/ToolSelector';
+import { ToolsPage } from './pages/ToolsPage';
+import { ConnectedQueriesPage } from './pages/ConnectedQueriesPage';
 import { API_CONFIG } from './config';
-import Divider from '@mui/material/Divider';
+import AppBar from '@mui/material/AppBar';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import Box from '@mui/material/Box';
+import Container from '@mui/material/Container';
+import Slide from '@mui/material/Slide';
 
 function App() {
   const [receivedData, setReceivedData] = useState<LoadDataParams | null>(null);
-  const [userDescriptions, setUserDescriptions] = useState<UserDescriptions>({});
+  const [connectedQueriesDescriptions, setConnectedQueriesDescriptions] = useState<UserDescriptions>({});
   const [selectedTools, setSelectedTools] = useState<FlowCube[]>([]);
   const [toolDescriptions, setToolDescriptions] = useState<ToolDescriptions>({});
+  const [currentPage, setCurrentPage] = useState(0);
+  const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('left');
 
   useFlow({
     onLoadData: async (data: LoadDataParams) => {
       console.log('Received data from Flow:', data);
       setReceivedData(data);
       
-      // Load user descriptions if they exist in the received data
-      if (data.value.userDescriptions) {
-        setUserDescriptions(data.value.userDescriptions);
+      // Load connected queries descriptions if they exist in the received data
+      if (data.value.connectedQueriesDescriptions) {
+        setConnectedQueriesDescriptions(data.value.connectedQueriesDescriptions);
       }
       
       // Load tool descriptions and reconstruct selected tools
@@ -66,14 +73,14 @@ function App() {
       
       const response = builder.build();
       
-      // Add user descriptions to the response
-      response.userDescriptions = userDescriptions;
+      // Add connected queries descriptions to the response
+      response.connectedQueriesDescriptions = connectedQueriesDescriptions;
       
       // Add tool descriptions to the response (selectedTools can be inferred from toolDescriptions keys)
       response.toolDescriptions = toolDescriptions;
       
       console.log('Sending response:', response);
-      console.log('User descriptions:', userDescriptions);
+      console.log('Connected queries descriptions:', connectedQueriesDescriptions);
       console.log('Tool descriptions:', toolDescriptions);
       
       return response;
@@ -83,8 +90,8 @@ function App() {
     },
   });
 
-  const handleUserDescriptionsChange = (descriptions: UserDescriptions) => {
-    setUserDescriptions(prev => {
+  const handleConnectedQueriesDescriptionsChange = (descriptions: UserDescriptions) => {
+    setConnectedQueriesDescriptions(prev => {
       // Only update if there are actual changes
       if (JSON.stringify(prev) !== JSON.stringify(descriptions)) {
         return descriptions;
@@ -110,53 +117,107 @@ function App() {
     }
   };
 
-  const selectedToolNames = selectedTools.map(t => t.Name || t.UniqueName);
+  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
+    // Set slide direction: Tools (0) is on left, Queries (1) is on right
+    setSlideDirection(newValue > currentPage ? 'left' : 'right');
+    setCurrentPage(newValue);
+  };
 
   return (
-    <div style={{ 
-      padding: '20px', 
-      fontFamily: 'Arial, sans-serif',
-      maxWidth: '800px',
-      margin: '0 auto'
-    }}>
-      {receivedData ? (
-        <>
-          {/* Connected Queries Section */}
-          <h1>Connected Queries</h1>
-          <ItemList 
-            items={receivedData.linkedQueries}
-            initialDescriptions={userDescriptions}
-            onDescriptionsChange={handleUserDescriptionsChange}
-            emptyMessage="No connected queries available"
-          />
-          
-          <Divider sx={{ my: 4 }} />
-          
-          {/* Tools Section */}
-          <h1>Tools</h1>
-          <ToolSelector 
-            onToolSelected={handleToolSelected}
-            selectedToolNames={selectedToolNames}
-          />
-          <ItemList 
-            items={selectedTools}
-            initialDescriptions={toolDescriptions}
-            onDescriptionsChange={handleToolDescriptionsChange}
-            emptyMessage="No tools selected. Choose a tool from the dropdown above."
-          />
-        </>
-      ) : (
-        <div style={{ 
-          padding: '40px', 
-          textAlign: 'center', 
-          backgroundColor: '#f5f5f5',
-          borderRadius: '8px',
-          marginTop: '20px'
-        }}>
-          <p style={{ color: '#999' }}>Waiting for data from Flow parent window...</p>
-        </div>
-      )}
-    </div>
+    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      {/* Top Navigation Bar */}
+      <AppBar position="static" sx={{ bgcolor: 'primary.main' }}>
+        <Tabs 
+          value={currentPage} 
+          onChange={handleTabChange}
+          textColor="inherit"
+          indicatorColor="secondary"
+          sx={{ 
+            '& .MuiTab-root': { 
+              minWidth: 120,
+              fontWeight: 'bold'
+            }
+          }}
+        >
+          <Tab label="Tools" />
+          <Tab label="Connected Queries" />
+        </Tabs>
+      </AppBar>
+
+      {/* Page Content */}
+      <Container maxWidth="md" sx={{ flexGrow: 1, pt: 2 }}>
+        {receivedData ? (
+          <Box sx={{ position: 'relative', width: '100%' }}>
+            {/* Tools Page */}
+            <Slide
+              direction={slideDirection === 'right' ? 'right' : 'left'}
+              in={currentPage === 0}
+              mountOnEnter
+              unmountOnExit
+              timeout={300}
+            >
+              <Box
+                role="tabpanel"
+                id="tabpanel-0"
+                aria-labelledby="tab-0"
+                sx={{ 
+                  position: currentPage === 0 ? 'relative' : 'absolute',
+                  width: '100%',
+                  top: 0,
+                  left: 0
+                }}
+              >
+                <ToolsPage
+                  selectedTools={selectedTools}
+                  toolDescriptions={toolDescriptions}
+                  onToolSelected={handleToolSelected}
+                  onToolDescriptionsChange={handleToolDescriptionsChange}
+                />
+              </Box>
+            </Slide>
+
+            {/* Connected Queries Page */}
+            <Slide
+              direction={slideDirection === 'left' ? 'left' : 'right'}
+              in={currentPage === 1}
+              mountOnEnter
+              unmountOnExit
+              timeout={300}
+            >
+              <Box
+                role="tabpanel"
+                id="tabpanel-1"
+                aria-labelledby="tab-1"
+                sx={{ 
+                  position: currentPage === 1 ? 'relative' : 'absolute',
+                  width: '100%',
+                  top: 0,
+                  left: 0
+                }}
+              >
+                <ConnectedQueriesPage
+                  linkedQueries={receivedData.linkedQueries}
+                  connectedQueriesDescriptions={connectedQueriesDescriptions}
+                  onConnectedQueriesDescriptionsChange={handleConnectedQueriesDescriptionsChange}
+                />
+              </Box>
+            </Slide>
+          </Box>
+        ) : (
+          <Box sx={{ 
+            padding: 5, 
+            textAlign: 'center', 
+            backgroundColor: '#f5f5f5',
+            borderRadius: 2,
+            mt: 3
+          }}>
+            <Box component="p" sx={{ color: 'text.secondary' }}>
+              Waiting for data from Flow parent window...
+            </Box>
+          </Box>
+        )}
+      </Container>
+    </Box>
   );
 }
 

@@ -79,7 +79,7 @@ export type FlowResponse = {
   Fields: IField[];
   DisplayName: string;
   iframeFieldsToFilter: { [key: string]: string };
-  userDescriptions?: UserDescriptions;
+  connectedQueriesDescriptions?: UserDescriptions;
   toolDescriptions?: ToolDescriptions;
 };
 

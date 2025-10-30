@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
@@ -31,10 +31,13 @@ export function ItemList({
     items: {},
     parameters: {}
   });
+  
+  const previousExternalRef = useRef<string>('');
+  const isInitialLoadRef = useRef(true);
 
   // Load initial descriptions
   useEffect(() => {
-    if (initialDescriptions) {
+    if (initialDescriptions && isInitialLoadRef.current) {
       const internal: InternalDescriptions = { items: {}, parameters: {} };
       
       Object.entries(initialDescriptions).forEach(([itemDisplayName, data]) => {
@@ -55,6 +58,7 @@ export function ItemList({
       });
       
       setDescriptions(internal);
+      isInitialLoadRef.current = false;
     }
   }, [initialDescriptions, items]);
 
@@ -87,10 +91,13 @@ export function ItemList({
       }
     });
     
-    if (onDescriptionsChange) {
+    // Only call onDescriptionsChange if the data actually changed
+    const externalString = JSON.stringify(external);
+    if (onDescriptionsChange && externalString !== previousExternalRef.current) {
+      previousExternalRef.current = externalString;
       onDescriptionsChange(external);
     }
-  }, [descriptions, items]); // Removed onDescriptionsChange from dependencies
+  }, [descriptions, items, onDescriptionsChange]);
 
   const handleItemDescriptionChange = (itemId: string, value: string) => {
     setDescriptions(prev => ({
