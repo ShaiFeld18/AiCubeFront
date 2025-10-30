@@ -90,10 +90,6 @@ export type PromptData = {
 };
 
 export type FlowResponse = {
-  Parameters: Partial<IFlowParameter>[];
-  Fields: IField[];
-  DisplayName: string;
-  iframeFieldsToFilter: { [key: string]: string };
   connectedCubesDescriptions?: UserDescriptions;
   toolCubeDescriptions?: ToolCubeDescriptions;
   prompt?: string;

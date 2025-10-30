@@ -176,247 +176,139 @@
         const iframeSection = document.getElementById('iframeSection');
         const sentDataOutput = document.getElementById('sentDataOutput');
 
+        // Store the last response from iframe
+        let lastIframeResponse = undefined;
+
         // Mock data that simulates what Flow would send
-        const mockFlowData = {
-            query: {
-                DisplayName: "Sample Query",
+        const mockConnectedCubes = [
+            {
+                id: "query-1",
+                UniqueName: "user_analytics",
+                Name: "User Analytics Query",
+                Description: "Analyze user behavior and engagement metrics over time",
+                Type: "query",
                 Parameters: [
                     {
-                        Name: "search_term",
-                        DisplayName: "Search Term",
+                        Name: "user_id",
+                        DisplayName: "User ID",
                         Type: "String",
                         IsSingleValue: true,
                         IsRequired: true,
-                        Description: "Enter search term",
+                        Description: "Enter user ID",
                         HideFromList: null,
                         AutoCompleteProvider: "",
                         OptionsProvider: "",
                         Options: [],
                         Category: "Filters",
                         ParameterSubtitle: null,
-                        Value: "test",
+                        Value: "",
                         visible: true,
                         Role: "",
                         OntologyType: null,
                         IsServerFilterAutoComplete: false
                     },
                     {
-                        Name: "enabled",
-                        DisplayName: "Enabled",
+                        Name: "start_date",
+                        DisplayName: "Start Date",
+                        Type: "DateTime",
+                        IsSingleValue: true,
+                        IsRequired: true,
+                        Description: "Analysis start date",
+                        HideFromList: null,
+                        AutoCompleteProvider: "",
+                        OptionsProvider: "",
+                        Options: [],
+                        Category: "Date Range",
+                        ParameterSubtitle: null,
+                        Value: "",
+                        visible: true,
+                        Role: "",
+                        OntologyType: null,
+                        IsServerFilterAutoComplete: false
+                    },
+                    {
+                        Name: "include_inactive",
+                        DisplayName: "Include Inactive Users",
                         Type: "Boolean",
                         IsSingleValue: true,
                         IsRequired: false,
-                        Description: "Enable feature",
+                        Description: "Include inactive users in results",
                         HideFromList: null,
                         AutoCompleteProvider: "",
                         OptionsProvider: "",
                         Options: [],
-                        Category: "Settings",
+                        Category: "Filters",
                         ParameterSubtitle: null,
-                        Value: true,
+                        Value: false,
+                        visible: true,
+                        Role: "",
+                        OntologyType: null,
+                        IsServerFilterAutoComplete: false
+                    }
+                ],
+                Fields: [],
+                Metadata: {
+                    Owner: "analytics_team"
+                },
+                Processes: [],
+                ViewConfig: {},
+                SavedProperties: {}
+            },
+            {
+                id: "query-2",
+                UniqueName: "sales_report",
+                Name: "Sales Report Query",
+                Description: "Generate comprehensive sales reports by region and time period",
+                Type: "query",
+                Parameters: [
+                    {
+                        Name: "region",
+                        DisplayName: "Region",
+                        Type: "String",
+                        IsSingleValue: true,
+                        IsRequired: true,
+                        Description: "Sales region",
+                        HideFromList: null,
+                        AutoCompleteProvider: "",
+                        OptionsProvider: "",
+                        Options: [],
+                        Category: "Location",
+                        ParameterSubtitle: null,
+                        Value: "",
                         visible: true,
                         Role: "",
                         OntologyType: null,
                         IsServerFilterAutoComplete: false
                     },
                     {
-                        Name: "limit",
-                        DisplayName: "Result Limit",
-                        Type: "Int",
+                        Name: "min_amount",
+                        DisplayName: "Minimum Amount",
+                        Type: "Double",
                         IsSingleValue: true,
                         IsRequired: false,
-                        Description: "Maximum results",
+                        Description: "Minimum sale amount",
                         HideFromList: null,
                         AutoCompleteProvider: "",
                         OptionsProvider: "",
                         Options: [],
-                        Category: "Settings",
+                        Category: "Filters",
                         ParameterSubtitle: null,
-                        Value: 100,
+                        Value: 0,
                         visible: true,
                         Role: "",
                         OntologyType: null,
                         IsServerFilterAutoComplete: false
                     }
                 ],
-                Fields: [
-                    {
-                        Name: "id",
-                        DisplayName: "ID",
-                        Type: "int"
-                    },
-                    {
-                        Name: "name",
-                        DisplayName: "Name",
-                        Type: "string"
-                    },
-                    {
-                        Name: "created_at",
-                        DisplayName: "Created At",
-                        Type: "datetime"
-                    },
-                    {
-                        Name: "location",
-                        DisplayName: "Location",
-                        Type: "geojson",
-                        GeoContent: true
-                    }
-                ],
-                iframeFieldsToFilter: {}
-            },
-            connectedCubes: [
-                {
-                    id: "query-1",
-                    UniqueName: "user_analytics",
-                    Name: "User Analytics Query",
-                    Description: "Analyze user behavior and engagement metrics over time",
-                    Type: "query",
-                    Parameters: [
-                        {
-                            Name: "user_id",
-                            DisplayName: "User ID",
-                            Type: "String",
-                            IsSingleValue: true,
-                            IsRequired: true,
-                            Description: "Enter user ID",
-                            HideFromList: null,
-                            AutoCompleteProvider: "",
-                            OptionsProvider: "",
-                            Options: [],
-                            Category: "Filters",
-                            ParameterSubtitle: null,
-                            Value: "",
-                            visible: true,
-                            Role: "",
-                            OntologyType: null,
-                            IsServerFilterAutoComplete: false
-                        },
-                        {
-                            Name: "start_date",
-                            DisplayName: "Start Date",
-                            Type: "DateTime",
-                            IsSingleValue: true,
-                            IsRequired: true,
-                            Description: "Analysis start date",
-                            HideFromList: null,
-                            AutoCompleteProvider: "",
-                            OptionsProvider: "",
-                            Options: [],
-                            Category: "Date Range",
-                            ParameterSubtitle: null,
-                            Value: "",
-                            visible: true,
-                            Role: "",
-                            OntologyType: null,
-                            IsServerFilterAutoComplete: false
-                        },
-                        {
-                            Name: "include_inactive",
-                            DisplayName: "Include Inactive Users",
-                            Type: "Boolean",
-                            IsSingleValue: true,
-                            IsRequired: false,
-                            Description: "Include inactive users in results",
-                            HideFromList: null,
-                            AutoCompleteProvider: "",
-                            OptionsProvider: "",
-                            Options: [],
-                            Category: "Filters",
-                            ParameterSubtitle: null,
-                            Value: false,
-                            visible: true,
-                            Role: "",
-                            OntologyType: null,
-                            IsServerFilterAutoComplete: false
-                        }
-                    ],
-                    Fields: [],
-                    Metadata: {
-                        Owner: "analytics_team"
-                    },
-                    Processes: [],
-                    ViewConfig: {},
-                    SavedProperties: {}
-                },
-                {
-                    id: "query-2",
-                    UniqueName: "sales_report",
-                    Name: "Sales Report Query",
-                    Description: "Generate comprehensive sales reports by region and time period",
-                    Type: "query",
-                    Parameters: [
-                        {
-                            Name: "region",
-                            DisplayName: "Region",
-                            Type: "String",
-                            IsSingleValue: true,
-                            IsRequired: true,
-                            Description: "Sales region",
-                            HideFromList: null,
-                            AutoCompleteProvider: "",
-                            OptionsProvider: "",
-                            Options: [],
-                            Category: "Location",
-                            ParameterSubtitle: null,
-                            Value: "",
-                            visible: true,
-                            Role: "",
-                            OntologyType: null,
-                            IsServerFilterAutoComplete: false
-                        },
-                        {
-                            Name: "min_amount",
-                            DisplayName: "Minimum Amount",
-                            Type: "Double",
-                            IsSingleValue: true,
-                            IsRequired: false,
-                            Description: "Minimum sale amount",
-                            HideFromList: null,
-                            AutoCompleteProvider: "",
-                            OptionsProvider: "",
-                            Options: [],
-                            Category: "Filters",
-                            ParameterSubtitle: null,
-                            Value: 0,
-                            visible: true,
-                            Role: "",
-                            OntologyType: null,
-                            IsServerFilterAutoComplete: false
-                        }
-                    ],
-                    Fields: [],
-                    Metadata: {
-                        Owner: "sales_team"
-                    },
-                    Processes: [],
-                    ViewConfig: {},
-                    SavedProperties: {}
-                }
-            ],
-            userName: "demo_user@example.com",
-            value: {
-                DisplayName: "Sample Query",
-                Parameters: [],
                 Fields: [],
-                iframeFieldsToFilter: {},
-                connectedCubesDescriptions: {
-                    "User Analytics Query": {
-                        queryDescription: "This is a test note I added previously",
-                        parameters: {
-                            "User ID": "Use the internal user ID, not email",
-                            "Start Date": "Must be in YYYY-MM-DD format"
-                        }
-                    },
-                    "test obsolete": {
-                        queryDescription: "This is a test note I added previously",
-                        parameters: {
-                            "User ID": "Use the internal user ID, not email",
-                            "Start Date": "Must be in YYYY-MM-DD format"
-                        }
-                    }
-                }
+                Metadata: {
+                    Owner: "sales_team"
+                },
+                Processes: [],
+                ViewConfig: {},
+                SavedProperties: {}
             }
-        };
+        ];
 
         // Listen for messages from iframe
         window.addEventListener('message', (event) => {
@@ -432,6 +324,9 @@
                     sendDataToIframe();
                 }, 100);
             } else if (event.data.type === 'set_parameter_value') {
+                // Store the response for next load
+                lastIframeResponse = event.data.value;
+                
                 statusDiv.textContent = 'Status: 💾 Received save response from iframe';
                 statusDiv.style.backgroundColor = '#d4edda';
                 statusDiv.style.borderColor = '#28a745';
@@ -453,7 +348,8 @@
         function sendDataToIframe() {
             const message = {
                 type: 'send_iframe_data',
-                ...mockFlowData
+                connectedCubes: mockConnectedCubes,
+                iframeResponse: lastIframeResponse
             };
             
             // Show the iframe section

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useFlow, LoadDataParams, FlowResponseBuilder, UserDescriptions, ToolCubeDescriptions, FlowCube } from './flow';
+import { useFlow, LoadDataParams, UserDescriptions, ToolCubeDescriptions, FlowCube } from './flow';
 import { PromptPage } from './pages/PromptPage';
 import { ToolCubesPage } from './pages/ToolCubesPage';
 import { ConnectedCubesPage } from './pages/ConnectedCubesPage';
@@ -100,82 +100,77 @@ function App() {
       console.log('Received data from Flow:', data);
       setReceivedData(data);
       
-      // Load connected cubes descriptions if they exist in the received data
-      if (data.value.connectedCubesDescriptions) {
-        // Clean up descriptions to remove entries that don't match actual queries
-        const cleanedDescriptions = cleanupDescriptions(
-          data.value.connectedCubesDescriptions,
-          data.linkedQueries
-        );
-        setConnectedCubesDescriptions(cleanedDescriptions);
-      }
-      
-      // Load prompt if it exists
-      if (data.value.prompt) {
-        setPromptContent(data.value.prompt);
-      }
-      
-      // Load plan if it exists
-      if (data.value.plan) {
-        setPlan(data.value.plan);
-      }
-      
-      // Load tool cube descriptions and reconstruct selected tool cubes
-      if (data.value.toolCubeDescriptions) {
-        setToolCubeDescriptions(data.value.toolCubeDescriptions);
+      // Load data from previousResponse if it exists
+      if (data.previousResponse) {
+        // Load connected cubes descriptions if they exist
+        if (data.previousResponse.connectedCubesDescriptions) {
+          // Clean up descriptions to remove entries that don't match actual queries
+          const cleanedDescriptions = cleanupDescriptions(
+            data.previousResponse.connectedCubesDescriptions,
+            data.linkedQueries
+          );
+          setConnectedCubesDescriptions(cleanedDescriptions);
+        }
         
-        // Fetch tool cube metadata for each tool cube in toolCubeDescriptions
-        const toolCubeNames = Object.keys(data.value.toolCubeDescriptions);
-        const toolCubePromises = toolCubeNames.map(async (toolCubeName) => {
-          try {
-            const response = await fetch(API_CONFIG.TOOL_METADATA_URL(toolCubeName));
-            if (response.ok) {
-              return await response.json();
+        // Load prompt if it exists
+        if (data.previousResponse.prompt) {
+          setPromptContent(data.previousResponse.prompt);
+        }
+        
+        // Load plan if it exists
+        if (data.previousResponse.plan) {
+          setPlan(data.previousResponse.plan);
+        }
+        
+        // Load tool cube descriptions and reconstruct selected tool cubes
+        if (data.previousResponse.toolCubeDescriptions) {
+          setToolCubeDescriptions(data.previousResponse.toolCubeDescriptions);
+          
+          // Fetch tool cube metadata for each tool cube in toolCubeDescriptions
+          const toolCubeNames = Object.keys(data.previousResponse.toolCubeDescriptions);
+          const toolCubePromises = toolCubeNames.map(async (toolCubeName) => {
+            try {
+              const response = await fetch(API_CONFIG.TOOL_METADATA_URL(toolCubeName));
+              if (response.ok) {
+                return await response.json();
+              }
+            } catch (error) {
+              console.error(`Failed to load tool cube metadata for ${toolCubeName}:`, error);
             }
-          } catch (error) {
-            console.error(`Failed to load tool cube metadata for ${toolCubeName}:`, error);
-          }
-          return null;
-        });
-        
-        const toolCubes = await Promise.all(toolCubePromises);
-        const validToolCubes = toolCubes.filter((toolCube): toolCube is FlowCube => toolCube !== null);
-        setSelectedToolCubes(validToolCubes);
+            return null;
+          });
+          
+          const toolCubes = await Promise.all(toolCubePromises);
+          const validToolCubes = toolCubes.filter((toolCube): toolCube is FlowCube => toolCube !== null);
+          setSelectedToolCubes(validToolCubes);
+        }
       }
     },
     onSave: () => {
       console.log('Save triggered');
       
-      // Build a response using the FlowResponseBuilder
-      const builder = new FlowResponseBuilder();
+      // Build minimal response with only non-empty properties
+      const response: any = {};
       
-      if (receivedData) {
-        // Load the original data
-        builder.loadFromObject(receivedData.value);
-        
-        // Modify or add some parameters
-        builder.addParameter(
-          'custom_param',
-          'Custom Parameter',
-          'String',
-          'Modified by demo app',
-          { IsRequired: false }
-        );
+      // Add connected cubes descriptions if not empty
+      if (Object.keys(connectedCubesDescriptions).length > 0) {
+        response.connectedCubesDescriptions = connectedCubesDescriptions;
       }
       
-      const response = builder.build();
+      // Add tool cube descriptions if not empty
+      if (Object.keys(toolCubeDescriptions).length > 0) {
+        response.toolCubeDescriptions = toolCubeDescriptions;
+      }
       
-      // Add connected cubes descriptions to the response
-      response.connectedCubesDescriptions = connectedCubesDescriptions;
+      // Add prompt if not empty
+      if (promptContent.trim()) {
+        response.prompt = promptContent;
+      }
       
-      // Add tool cube descriptions to the response (selectedToolCubes can be inferred from toolCubeDescriptions keys)
-      response.toolCubeDescriptions = toolCubeDescriptions;
-      
-      // Add prompt content to the response
-      response.prompt = promptContent;
-      
-      // Add plan to the response
-      response.plan = plan;
+      // Add plan if not empty
+      if (plan.trim()) {
+        response.plan = plan;
+      }
       
       console.log('Sending response:', response);
       console.log('Connected cubes descriptions:', connectedCubesDescriptions);

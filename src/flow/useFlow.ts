@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { FlowCube, FlowResponse } from "./types";
-import { FlowResponseBuilder } from "./FlowResponseBuilder";
 
 enum FlowEvents {
   SEND_DATA = "send_iframe_data",
@@ -15,10 +14,8 @@ type UseFlowProps = {
 };
 
 export type LoadDataParams = {
-  response: FlowResponseBuilder;
   linkedQueries: Array<FlowCube>;
-  username: string;
-  value: FlowResponse;
+  previousResponse?: FlowResponse;
 };
 
 export const useFlow = ({ onLoadData, onSave, onCancel }: UseFlowProps) => {
@@ -34,29 +31,49 @@ export const useFlow = ({ onLoadData, onSave, onCancel }: UseFlowProps) => {
     switch (data.type) {
       case FlowEvents.SEND_DATA:
         if (onLoadData) {
-          const flowResponseBuilder = new FlowResponseBuilder().loadFromObject(
-            data.query
-          );
+          // Parse iframeResponse if it exists
+          let previousResponse: FlowResponse | undefined = undefined;
+          if (data.iframeResponse) {
+            try {
+              previousResponse = JSON.parse(data.iframeResponse);
+            } catch (error) {
+              console.error('Failed to parse iframeResponse:', error);
+            }
+          }
+
           onLoadData({
-            response: flowResponseBuilder,
             linkedQueries: data.connectedCubes,
-            username: data.userName,
-            value: data.value,
+            previousResponse,
           });
         }
         break;
 
       case FlowEvents.SAVE:
-        let result: FlowResponse = new FlowResponseBuilder().build();
+        let result: FlowResponse = {};
         if (onSave) {
           result = onSave();
+        }
+
+        // Build minimal response with only properties that have values
+        const minimalResponse: FlowResponse = {};
+        if (result.connectedCubesDescriptions && Object.keys(result.connectedCubesDescriptions).length > 0) {
+          minimalResponse.connectedCubesDescriptions = result.connectedCubesDescriptions;
+        }
+        if (result.toolCubeDescriptions && Object.keys(result.toolCubeDescriptions).length > 0) {
+          minimalResponse.toolCubeDescriptions = result.toolCubeDescriptions;
+        }
+        if (result.prompt) {
+          minimalResponse.prompt = result.prompt;
+        }
+        if (result.plan) {
+          minimalResponse.plan = result.plan;
         }
 
         if (window.top) {
           window.top.postMessage(
             {
               type: "set_parameter_value",
-              value: JSON.stringify(result),
+              value: JSON.stringify(minimalResponse),
             },
             "*"
           );
